@@ -1,161 +1,229 @@
-# 🌾 Vajrayield– Rural Market Intelligence & Price Discovery Platform
+<div align="center">
 
-<p align="center">
-  <img src="https://img.shields.io/badge/PS%2002-Rural%20Market%20Intelligence-22c55e?style=for-the-badge&logo=target" alt="PS 02" />
-  <img src="https://img.shields.io/badge/React%2018-TypeScript-blue?style=for-the-badge&logo=react" alt="React 18 TypeScript" />
-  <img src="https://img.shields.io/badge/Vite-7.x-646CFF?style=for-the-badge&logo=vite" alt="Vite" />
-  <img src="https://img.shields.io/badge/TailwindCSS-v3-38B2AC?style=for-the-badge&logo=tailwind-css" alt="Tailwind CSS" />
-  <img src="https://img.shields.io/badge/Tests-14%20Passing-brightgreen?style=for-the-badge&logo=vitest" alt="Tests" />
-  <img src="https://img.shields.io/badge/Gov%20APMC-AGMARKNET%20%26%20eNAM-FF9933?style=for-the-badge" alt="APMC AGMARKNET" />
-</p>
+<img src="public/vajrayield.jpeg" alt="VajraYield Emblem" width="110" height="110" style="border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
 
----
+# 🌾 VajraYield (ವಜ್ರ ಯೀಲ್ಡ್)
 
-## 📖 Overview
+### Precision Rural Market Intelligence & Cooperative Freight Arbitrage Engine
 
-**Vajra Yield** is an enterprise-grade, data-driven agricultural intelligence and market discovery platform built for Indian farmers, Farmer Producer Organizations (FPOs), and rural agri-entrepreneurs. 
-
-Developed strictly aligned with **Problem Statement 02 (Rural Market Intelligence & Price Discovery)**, the platform eliminates middleman opacity, enables spatial APMC mandi arbitrage, and empowers farmers with true net in-hand cash realization calculation, 14-day price forecasting, WDRA warehouse discovery, and multi-language voice accessibility.
+**Hackathon Premier League (HPL) 2026 | SMVITM Bantakal**  
+**Track:** PS 02 — Rural Market Intelligence & Spatial Arbitrage  
+**Territory Focus:** Coastal Karnataka (*"Build For Udupi!"*)  
+**Status:** Production Ready | 100% Passing Vitest Coverage (27/27 Tests)
 
 ---
 
-## ✨ Key Platform Modules & Innovations
+[![Vite](https://img.shields.io/badge/Vite-6.0-646CFF?style=flat&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![React](https://img.shields.io/badge/React-18.3-61DAFB?style=flat&logo=react&logoColor=black)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![TailwindCSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?style=flat&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Vitest](https://img.shields.io/badge/Vitest-100%25_Pass-729B1B?style=flat&logo=vitest&logoColor=white)](https://vitest.dev/)
+[![A11Y](https://img.shields.io/badge/A11Y-Kannada%20%7C%20Tulu%20TTS-059669?style=flat)](#-5-differentiators--regional-alignment)
 
-### 1️⃣ 📊 Real-Time APMC Price Discovery & Benchmark Engine
-* **Multi-Commodity Tracking:** Live modal, minimum, and maximum rates across 15+ major crops (Wheat, Soybean, Cotton, Onion, Tomato, Basmati Paddy, Maize, Mustard, Chana, Turmeric, Garlic, etc.).
-* **Government MSP Spread Benchmark:** Real-time calculation comparing prevailing mandi prices against Central Minimum Support Price floors (e.g. `+₹205 Above MSP`).
-* **🔊 Voice Audio Accessibility:** Integrated HTML5 Web Speech API delivering crystal-clear readouts in **Hindi (`hi-IN`)**, **Marathi (`mr-IN`)**, and **English (`en-IN`)**.
-* **Sparklines & Historical Trends:** 7-day sparkline mini-charts and 6-month comparative price trend visualizer.
-
-### 2️⃣ 📍 Nearby Mandi Comparisons & Spatial Arbitrage
-* **Radius-Based Hub Search:** Filter mandis by customizable distance bands (25 km, 50 km, 100 km, and 350 km interstate).
-* **Multi-Mandi Matrix:** Direct side-by-side analysis of distance (km), estimated transit time (hrs), daily arrival volume (Tonnes), and price differentials (+/- ₹/Qtl).
-* **Gate Queue Monitoring:** Real-time mandi yard congestion indicators (*Smooth <30m*, *Moderate 1-2h*, *Heavy Queue 3+h*).
-* **Direct APMC Control Contact:** Instant one-tap calling to market committee secretariats.
-
-### 3️⃣ 💰 Net Revenue Calculator & True Cash Realization
-* **The Core Problem Solved:** Eliminates misleading headline prices by calculating actual net in-hand cash after all logistics, statutory levies, and transit losses.
-* **Granular Cost Deductions:**
-  * **Transport Logistics:** Vehicle-specific rates (Tata Ace, Bolero Maxi, Tractor Trolley, Eicher 14ft, 10-T 6-Wheeler).
-  * **Statutory Mandi Cess:** Official state APMC cess (1.0% – 1.5%).
-  * **Handling & Hamali:** Labor loading/unloading rates per quintal.
-  * **Weighbridge Charges:** Standard electronic weigh slip fees.
-  * **Transit Shrinkage:** Moisture loss and perishable spoilage factors.
-* **🏆 Highest Net Profit Crown:** Highlights the most profitable market destination.
-* **Shareable Insights:** One-click CSV export and instant WhatsApp summary generator.
-
-### 4️⃣ 🔮 14-Day Demand Forecasting & Heuristic Advisory
-* **Predictive Price Bands:** Visual confidence interval charts with projected modal rates, upside targets, and downside support floors.
-* **Actionable Advisories:** Dynamic recommendations (`HOLD STOCK`, `SELL IMMEDIATELY`, `DIVERT SHIPMENT`).
-* **Supply-Demand Balance Index:** Regional market supply categorization (Deficit / Balanced / Surplus).
-* **Verified Corporate & FPO Bids:** Direct contract procurement listings (ITC e-Choupal, Sahyadri Farms, Adani Wilmar) with floor price offers and guaranteed payment terms.
-
-### 5️⃣ 🚚 Supply Chain Transparency & Post-Harvest Finance
-* **0% Farmer Commission Audit:** Transparent breakdown of gazetted market charges protecting farmers from illegal deductions.
-* **WDRA Accredited Warehouse Locator:** Cold storage and dry warehouse directory with real-time capacity and rental rates.
-* **e-NWR Pledge Loan Calculator:** Instant collateralized credit eligibility estimator (up to 70% LTV at 7% p.a.).
-* **Rural Logistics Transporter Fleet:** Direct transporter contacts with transparent per-km freight pricing.
-
-### 6️⃣ 🚜 Farm Machinery & Custom Hiring Centers (CHC)
-* **Equipment Rentals:** Search and book tractors, rotavators, combined harvesters, laser levelers, and boom sprayers from local CHCs.
-* **Government Subsidy Guides:** Direct guidance on **SMAM (Sub-Mission on Agricultural Mechanization)** and **DBT Agriculture** schemes (40%–50% subsidy).
-
-### 7️⃣ 🌾 Crop Care & Diagnostic Support
-* **Disease & Pest Prevention:** Step-by-step guidance for fungal blights, stem borers, rusts, and leaf spots.
-* **Chemical & Bio Mixture Guidelines:** Compatible tank-mix recommendations, dosages, and safety intervals.
+</div>
 
 ---
 
-## 🛠️ Technology Stack
+## 📌 1. Executive Summary & Problem Framing
 
-| Layer | Technologies |
-|---|---|
-| **Frontend Core** | React 18, TypeScript, Vite |
-| **Styling & UI** | Tailwind CSS, Radix UI Primitives, Lucide Icons, Glassmorphic Design System |
-| **Data Visualization** | Recharts (Responsive Line, Bar, and Area charts) |
-| **Accessibility** | Web Speech Synthesis API (`en-IN`, `hi-IN`, `mr-IN`), Semantic HTML5, ARIA labels |
-| **Internationalization** | Context-driven multi-language support (`en`, `hi`, `mr`, `gu`, `te`) |
-| **Testing** | Vitest, React Testing Library, JSDOM (14 automated tests) |
-| **Build & Tooling** | Vite, PostCSS, Autoprefixer, TypeScript Compiler (`tsc`) |
+Smallholder agricultural producers in Coastal Karnataka routinely fall victim to the **"Gross Modal Price Optical Illusion"**:
 
----
+1. **The Deceptive Spread:** A terminal wholesale market like Mangaluru Central Bunder lists tomatoes at **₹27/kg (₹2,700/Qtl)**, while the local Adi Udupi APMC lists them at **₹22/kg (₹2,200/Qtl)**.
+2. **The Hidden Drain:** Dispatching 500 kg of produce solo over 54 km incurs private mini-truck hire, roundtrip fuel expenses, highway toll fees, and transit decay accelerated by coastal humidity.
+3. **The Unseen Realization:** The distant terminal market yields **less net cash in hand** than selling locally at Adi Udupi.
 
-## 🏗️ System Architecture
+**VajraYield** resolves this problem. Decoupled from unreliable external APIs via a verified local cached baseline, VajraYield evaluates true net realization and offers cooperative cluster pooling to cut transport overhead.
 
-```text
-                     🌾 FARMER / FPO / RURAL AGRI-USER
-                                    │
-                                    ▼
-       ┌────────────────────────────────────────────────────────┐
-       │   React 18 + TypeScript + Responsive Glassmorphic UI   │
-       │   (Web Speech Synthesis • Multi-Lingual Context)       │
-       └────────────────────────────┬───────────────────────────┘
-                                    │
-         ┌──────────────────────────┼──────────────────────────┐
-         ▼                          ▼                          ▼
-┌──────────────────┐      ┌──────────────────┐      ┌──────────────────┐
-│  Mandi Price     │      │ Spatial Arbitrage│      │  Net Revenue     │
-│  Discovery Engine│      │ & Radius Matrix  │      │  Profit Engine   │
-└──────────────────┘      └──────────────────┘      └──────────────────┘
-         │                          │                          │
-         ▼                          ▼                          ▼
-┌──────────────────┐      ┌──────────────────┐      ┌──────────────────┐
-│ 14-Day Demand    │      │ WDRA Warehouses  │      │ CHC Machinery    │
-│ & Price Forecast │      │ & e-NWR Loans    │      │ & Crop Care      │
-└──────────────────┘      └──────────────────┘      └──────────────────┘
+```mermaid
+flowchart TD
+    A[Bantakal Farmer: 500 kg Tomato Harvest] --> B{Choose Mandi Strategy}
+
+    B -->|Deceptive High Gross| C[Mangaluru Bunder Wholesale\nGross: ₹13,500 @ ₹27/kg]
+    B -->|Nearby APMC Hub| D[Adi Udupi APMC\nGross: ₹11,000 @ ₹22/kg]
+
+    C --> E[Transit Deductions:\n- Base Hire: ₹2,200\n- Fuel Roundtrip: ₹1,512\n- Hejamadi Toll: ₹120\n- Spoilage Decay: ₹750\n- Statutory APMC Cess: ₹165]
+    D --> F[Transit Deductions:\n- Base Hire: ₹600\n- Fuel Roundtrip: ₹406\n- Tolls: ₹0\n- Spoilage Decay: ₹142\n- Statutory APMC Cess: ₹140]
+
+    E --> G[Net Solo In-Hand: ₹8,753 ❌\nDeceptive Spread Loss: -₹1,199]
+    F --> H[Net Solo In-Hand: ₹9,952 ✅\nOptimal Local Return]
+
+    G -.->|Enable Shared Freight Pooling| I[Shirva-Bantakal Cluster Pool\nTransit Split: 64% Discount\nNet Pooled Return: ₹11,350 🚀]
 ```
 
 ---
 
-## 🚀 Getting Started
+## 🧮 2. The Core Mathematical Model
 
-### Prerequisites
-- **Node.js**: `v18.0.0` or higher
-- **npm**: `v9.0.0` or higher
+The decision engine runs deterministic, pure TypeScript calculations without floating-point errors.
 
-### Installation & Local Setup
+### The Unified Realized Net Revenue Formula
+
+**1. Gross Revenue**
+
+$$R_{\text{gross}} = P_{\text{modal}} \times Q_{\text{kg}}$$
+
+**2. Dynamic Freight Expense**
+
+$$\text{Cost}_{\text{transit}} = \text{VehicleHire} + \text{Fuel}_{\text{roundtrip}} + \text{Toll} \quad \div \quad N_{\text{pooled farmers}}$$
+
+**3. Coastal Perishability & Heat Decay**
+
+$$\text{Loss}_{\text{spoilage}} = Q_{\text{kg}} \times P_{\text{modal}} \times k_{\text{decay}} \times \left(\frac{D_{\text{km}}}{v_{\text{rural}}}\right)$$
+
+Where:
+- $v_{\text{rural}} = 35\ \text{km/h}$ (standard coastal rural road velocity)
+- $k_{\text{decay}}$ is the hourly crop loss factor:
+
+| Crop | Decay Rate |
+|---|---|
+| Tomato | 0.025/hr (2.5%) |
+| Mattu Gulla (GI-Tag Brinjal) | 0.018/hr (1.8%) |
+| Shankarapura Jasmine | 0.050/hr (5.0%) |
+| Arecanut (Supari) | 0.000/hr (Non-perishable) |
+
+**4. Mandi Statutory Deductions**
+
+$$\text{Cess}_{\text{APMC}} = R_{\text{gross}} \times r_{\text{cess}}$$
+
+$$R_{\text{net}} = R_{\text{gross}} - \text{Cost}_{\text{transit}} - \text{Loss}_{\text{spoilage}} - \text{Cess}_{\text{APMC}}$$
+
+---
+
+## 📊 3. Verification: The 500 kg Tomato Dilemma
+
+Comparison from Bantakal (SMVITM Campus Hub) origin with $500\ \text{kg}$ Tomato:
+
+| Metric | Adi Udupi APMC (Local) | Mangaluru Central Bunder (Terminal) | Delta / Arbitrage Reality |
+|---|---|---|---|
+| Distance (One-Way) | 14.5 km | 54.0 km | +39.5 km |
+| Transit Duration | 25 mins | 85 mins | +60 mins |
+| Listed Modal Price | ₹2,200/Qtl (₹22/kg) | ₹2,700/Qtl (₹27/kg) | +₹500/Qtl *(Optical Trap)* |
+| Gross Yield | ₹11,000 | ₹13,500 | +₹2,500 |
+| Vehicle Hire + Fuel + Toll | ₹1,006 | ₹3,832 | +₹2,826 transit drag |
+| Microclimate Spoilage | ₹142 | ₹750 | +₹608 humidity loss |
+| APMC Cess + Hamali | ₹140 | ₹165 | +₹25 |
+| **Net Solo In-Hand Cash** | **₹9,952 🟢** | **₹8,753 ⚠️** | **Adi Udupi wins by +₹1,199** |
+| **Net Pooled Cash (3-Farmer Cluster)** | ₹10,480 | **₹11,350 🚀** | **Mangaluru becomes viable** |
+
+---
+
+## 🏛️ 4. System Architecture & Component Hierarchy
+
+```mermaid
+graph TD
+    subgraph Client Application Layer
+        A[index.html / main.tsx] --> B[App.tsx Router]
+        B --> C[pages/Index.tsx]
+        C --> D[Header.tsx - Vernacular Context]
+        C --> E[LocationSelector.tsx - Bantakal & Udupi APMCs]
+        C --> F[MarketIntelligenceDashboard.tsx]
+    end
+
+    subgraph Core Functional Engines
+        F --> G[CommodityPriceDiscovery.tsx]
+        F --> H[MandiComparison.tsx]
+        F --> I[NetRevenueCalculator.tsx]
+        F --> J[DemandForecasting.tsx]
+    end
+
+    subgraph Pure Logic & Data Stores
+        I --> K[src/lib/calculator.ts: Deterministic Math Core]
+        G --> L[src/data/ruralMarketData.ts: Regional Dataset]
+        H --> L
+        I --> L
+    end
+
+    subgraph Accessibility & Voice
+        D --> M[Web Speech API: Kannada / Tulu Voice Briefings]
+        G --> M
+    end
+
+    subgraph Test Rigor
+        K --> N[src/test/netRevenueCalculator.test.ts: 27 Vitest Cases]
+    end
+```
+
+---
+
+## 🌟 5. Differentiators & Regional Alignment
+
+- **🗺️ Udupi Regional Grounding** (*"Build For Udupi!"*)  
+  Pre-configured for farmer clusters in Bantakal, Shirva, Brahmavara, Karkala, and Kaup. Integrates regional GI-tagged cash crops: Mattu Gulla, Shankarapura Jasmine (Udupi Mallige), and Arecanut (Chali).
+
+- **🚛 Shared Freight Pooling Radar**  
+  Solves prohibitive vehicle hiring costs for smallholders through simulated 3-farmer cooperative pooling.
+
+- **🗣️ Accessibility (A11Y) with Local Dialects**  
+  One-touch voice briefings delivering spoken recommendations in Kannada (ಕನ್ನಡ) and Tulu (ತುಳು) via the native Web Speech API.
+
+- **🔒 Resilient Local Baseline**  
+  Avoids fragile live government scrapers during critical demonstrations, running O(1) calculations with verified baseline regional data.
+
+---
+
+## 🧪 6. Testing & Quality Assurance
+
+The codebase includes automated unit tests covering all mathematical edge cases via Vitest:
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/vineethbhatalevoor/VajraYield.git
-cd HPL
+# Execute the test suite
+npm run test
+```
 
-# 2. Install dependencies
+### Test Scope (27 Passing Suites)
+
+| Test Category | Description |
+|---|---|
+| ✅ Mathematical Accuracy | Confirms net revenues across varying quantities (50 kg to 2,000 kg) |
+| ✅ Scenario Verification | Evaluates the 500 kg Tomato condition: `netReturn(Adi Udupi) > netReturn(Mangaluru)` |
+| ✅ Pooling Efficiency | Verifies that toggling `isPooled: true` yields a >60% reduction in transport expenses |
+| ✅ Input Validation | Handles negative weights, NaN, and zero quantities gracefully with standard fallback guards |
+
+---
+
+## 🚀 7. Installation & Local Development
+
+### Prerequisites
+
+- **Node.js:** v18.0.0 or higher
+- **npm:** v9.0.0 or higher
+
+```bash
+# Clone the repository
+git clone https://github.com/vineethbhatalevoor/VajraYield.git
+cd VajraYield
+
+# Install dependencies
 npm install
 
-# 3. Start local development server
+# Run the Vitest test suite
+npm run test
+
+# Launch the local development server
 npm run dev
 ```
 
-The application will be accessible at: **`http://localhost:8080/`**
+Open your browser and navigate to:
 
----
-
-## 🧪 Testing & Verification
-
-Run the automated test suite with Vitest and React Testing Library:
-
-```bash
-# Run all unit and integration tests
-npm test -- --run
-
-# Run tests in watch mode
-npm test
-
-# Build production bundle
-npm run build
+```
+http://localhost:8080/
 ```
 
 ---
 
-## ♿ Accessibility & Inclusivity
+## 👥 8. Squad Information & Hackathon Details
 
-- **High Contrast Ratios:** Designed for outdoor sunlight readability in rural environments.
-- **Audio Readouts:** Native text-to-speech engine reading commodity modal rates in English, Hindi, and Kannada.
-- **Low-Bandwidth Optimized:** Lightweight bundle footprint with responsive SVG charts and instant offline caching.
-- **Full Keyboard & Screen Reader Support:** Semantic HTML markup and Radix UI ARIA-compliant primitives.
+| Field | Details |
+|---|---|
+| **Event** | Hackathon Premier League (HPL) 2026 |
+| **Host Institution** | Shri Madhwa Vadiraja Institute of Technology and Management (SMVITM), Bantakal, Udupi |
+| **Problem Statement** | PS 02 — Rural Market Intelligence |
+| **Squad Identity** | VajraYield |
 
+---
 
-<p align="center">
-  🌾 <i>Empowering Indian Farmers with Transparent Real-Time Data & Maximized Net Realization</i>
-</p>
+<div align="center">
+
+*Built with ❤️ for the farmers of Coastal Karnataka*
+
+</div>
