@@ -155,13 +155,6 @@ npm run build
 - **Low-Bandwidth Optimized:** Lightweight bundle footprint with responsive SVG charts and instant offline caching.
 - **Full Keyboard & Screen Reader Support:** Semantic HTML markup and Radix UI ARIA-compliant primitives.
 
----
-
-## 📄 License
-
-This project is licensed under the **MIT License**.
-
----
 
 <p align="center">
   🌾 <i>Empowering Indian Farmers with Transparent Real-Time Data & Maximized Net Realization</i>
