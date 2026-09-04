@@ -1,4 +1,4 @@
-# 🌾 Vajrayeild– Rural Market Intelligence & Price Discovery Platform
+# 🌾 Vajrayield– Rural Market Intelligence & Price Discovery Platform
 
 <p align="center">
   <img src="https://img.shields.io/badge/PS%2002-Rural%20Market%20Intelligence-22c55e?style=for-the-badge&logo=target" alt="PS 02" />
