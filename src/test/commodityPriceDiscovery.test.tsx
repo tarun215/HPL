@@ -15,9 +15,9 @@ describe("CommodityPriceDiscovery Component", () => {
     expect(screen.getByText(/Cereals & Grains/i)).toBeInTheDocument();
   });
 
-  it("should display commodity cards with modal rates and MSP comparisons", () => {
+  it("should display commodity cards for Coastal Karnataka crops", () => {
     render(<CommodityPriceDiscovery language="en" />);
-    expect(screen.getAllByText(/Onion/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Wheat/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Tomato/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Mattu Gulla|Jasmine|Arecanut/i).length).toBeGreaterThan(0);
   });
 });

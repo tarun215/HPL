@@ -91,6 +91,14 @@ export const CommodityPriceDiscovery = ({
       textToSpeak = "नमस्कार शेतकरी बांधवांनो, आजचे थेट बाजारभाव: " + itemsToRead.map(c => 
         `${c.name}, सरासरी भाव ₹${c.modalPrice} प्रति क्विंटल, आवक ${c.arrivalVolume} टन.`
       ).join(" ");
+    } else if (language === "kn") {
+      textToSpeak = "ನಮಸ್ಕಾರ ರೈತ ಬಾಂಧವರೇ, ಇಂದಿನ ಲೈವ್ ಮಂಡಿ ದರಗಳು: " + itemsToRead.map(c => 
+        `${c.name}, ಮಾಡೆಲ್ ದರ ಪ್ರತಿ ಕ್ವಿಂಟಾಲ್‌ಗೆ ₹${c.modalPrice}, ಆವಕ ${c.arrivalVolume} ಟನ್.`
+      ).join(" ");
+    } else if (language === "tulu") {
+      textToSpeak = "ನಮಸ್ಕಾರ ರೈತರೆ, ಇನಿತ ಲೈವ್ ಮಂಡಿ ದರ: " + itemsToRead.map(c => 
+        `${c.name}, ಮಾಡೆಲ್ ದರ ಪ್ರತಿ ಕ್ವಿಂಟಾಲ್‌ಗ್ ₹${c.modalPrice}, ಆವಕ ${c.arrivalVolume} ಟನ್.`
+      ).join(" ");
     } else {
       textToSpeak = "Live APMC Mandi Rates: " + itemsToRead.map(c => 
         `${c.name}, modal price ₹${c.modalPrice} per quintal, daily arrivals ${c.arrivalVolume} tonnes.`

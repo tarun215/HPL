@@ -57,7 +57,7 @@ const Profile = () => {
                 </Badge>
               </div>
               <p className="text-xs text-emerald-100 mt-1">
-                Kisan ID: KISAN-MH-NSK-4491 • Nashik Agri Cluster
+                Kisan ID: KISAN-MH-NSK-4491 • Bantakal Agri Cluster
               </p>
             </div>
           </div>

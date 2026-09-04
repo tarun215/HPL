@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,40 +6,37 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { 
-  Calculator, 
-  Trophy, 
-  Truck, 
-  TrendingUp, 
-  Download, 
-  Share2, 
-  CheckCircle, 
-  AlertCircle,
-  HelpCircle,
+import { Slider } from "@/components/ui/slider";
+import {
+  Calculator,
+  Trophy,
+  Truck,
+  TrendingUp,
+  AlertTriangle,
   Sparkles,
+  CheckCircle,
+  Users,
+  MapPin,
+  Volume2,
+  Leaf,
+  Download,
+  Share2,
   ArrowUpRight,
-  ShieldAlert,
-  Coins
+  Coins,
 } from "lucide-react";
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer, 
-  Legend 
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
 } from "recharts";
-import { 
-  RURAL_COMMODITIES, 
-  MASTER_MANDIS, 
-  TRANSPORT_VEHICLES, 
-  CommodityRecord, 
-  MandiInfo, 
-  TransportVehicle 
-} from "@/data/ruralMarketData";
-import { Language, translateItemName } from "@/utils/translations";
+import { RURAL_COMMODITIES, MASTER_MANDIS, ORIGIN_CLUSTERS } from "@/data/ruralMarketData";
+import { calculateNetReturns, MandiCalculation } from "@/lib/calculator";
+import { Language } from "@/utils/translations";
 import { getMarketTranslation } from "@/utils/marketTranslations";
 import { toast } from "sonner";
 
@@ -49,349 +46,412 @@ interface NetRevenueCalculatorProps {
   initialMandiId?: string;
 }
 
+// Kannada speech synthesis text for "Listen" button
+const KANNADA_AUDIO_BRIEFING =
+  "ಬಂಟಕಲ್ ರೈತರಿಗೆ ಉಡುಪಿ ಎಪಿಎಂಸಿ ಮಾರುಕಟ್ಟೆ ಹೆಚ್ಚು ಲಾಭದಾಯಕವಾಗಿದೆ. ಒಟ್ಟು ನಿವ್ವಳ ಆದಾಯ ಒಂಬತ್ತು ಸಾವಿರದ ಒಂಬೈನೂರ ಐವತ್ತೆರಡು ರೂಪಾಯಿಗಳು.";
+
 export const NetRevenueCalculator = ({
   language = "en",
-  initialCropId = "onion",
+  initialCropId = "tomato",
   initialMandiId,
 }: NetRevenueCalculatorProps) => {
   const [cropId, setCropId] = useState<string>(initialCropId);
-  const [quantityQtl, setQuantityQtl] = useState<number>(60);
-  const [selectedVehicleId, setSelectedVehicleId] = useState<string>("eicher_14ft");
-  const [customFreightRate, setCustomFreightRate] = useState<number | "">("");
-  const [includeShrinkage, setIncludeShrinkage] = useState<boolean>(true);
+  const [quantityKg, setQuantityKg] = useState<number>(500);
+  const [origin, setOrigin] = useState<string>("Bantakal (SMVITM Hub)");
+  const [isPooled, setIsPooled] = useState<boolean>(false);
+  const [applyPerishability, setApplyPerishability] = useState<boolean>(true);
+  const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
 
-  const selectedCrop = useMemo(() => {
-    return RURAL_COMMODITIES.find((c) => c.id === cropId) || RURAL_COMMODITIES[0];
-  }, [cropId]);
+  // Update crop when prop changes
+  useEffect(() => {
+    if (initialCropId) setCropId(initialCropId);
+  }, [initialCropId]);
 
-  const selectedVehicle = useMemo(() => {
-    return TRANSPORT_VEHICLES.find((v) => v.id === selectedVehicleId) || TRANSPORT_VEHICLES[3];
-  }, [selectedVehicleId]);
+  const selectedCrop = useMemo(
+    () => RURAL_COMMODITIES.find((c) => c.id === cropId) || RURAL_COMMODITIES[0],
+    [cropId]
+  );
 
-  // Perishability factor: vegetables lose 0.6% per 50km, grains lose 0.1% per 50km
-  const perishabilityPer50km = useMemo(() => {
-    if (selectedCrop.category === "Vegetables") return 0.008; // 0.8% per 50km
-    if (selectedCrop.category === "Spices") return 0.002;
-    return 0.001; // 0.1% for grains/oilseeds
-  }, [selectedCrop.category]);
+  // Run the deterministic math engine
+  const calculations: MandiCalculation[] = useMemo(() => {
+    try {
+      return calculateNetReturns(
+        cropId,
+        quantityKg,
+        origin,
+        MASTER_MANDIS as any[],
+        isPooled,
+        applyPerishability
+      );
+    } catch {
+      return [];
+    }
+  }, [cropId, quantityKg, origin, isPooled, applyPerishability]);
 
-  // Compute Net Economics across all mandis
-  const mandiEconomics = useMemo(() => {
-    const activeFreightPerKm = typeof customFreightRate === "number" && customFreightRate > 0
-      ? customFreightRate
-      : selectedVehicle.ratePerKm;
+  const winner = calculations[0];
+  const adiUdupi = calculations.find((c) => c.id === "mandi_adi_udupi");
+  const mangaluru = calculations.find((c) => c.id === "mandi_mangaluru");
 
-    return MASTER_MANDIS.map((mandi) => {
-      const commodityData = mandi.commodities[cropId];
-      const modalPrice = commodityData ? commodityData.modalPrice : selectedCrop.modalPrice;
-      const minPrice = commodityData ? commodityData.minPrice : selectedCrop.minPrice;
-      const maxPrice = commodityData ? commodityData.maxPrice : selectedCrop.maxPrice;
+  // Reference scenario flags (500 kg Tomato default)
+  const isReferenceScenario = cropId === "tomato" && quantityKg === 500;
+  const showMangaluruWarning =
+    isReferenceScenario && !isPooled && adiUdupi && mangaluru &&
+    adiUdupi.netCashSolo > mangaluru.netCashSolo;
+  const showPoolingCelebration =
+    isReferenceScenario && isPooled && mangaluru && adiUdupi &&
+    mangaluru.netCashPooled > adiUdupi.netCashPooled;
 
-      // 1. Gross Revenue
-      const grossRevenue = quantityQtl * modalPrice;
-
-      // 2. Transport Freight (Round trip considered or commercial one-way loaded + deadhead factor)
-      const freightCost = Math.round(selectedVehicle.baseFare + (mandi.distanceKm * activeFreightPerKm));
-
-      // 3. APMC Cess (1.0% - 1.5%)
-      const apmcCess = Math.round(grossRevenue * (mandi.apmcCessPercent / 100));
-
-      // 4. Hamali (Labour Handling per quintal)
-      const hamaliCost = quantityQtl * mandi.hamaliPerQtl;
-
-      // 5. Weighbridge fee
-      const weighbridgeCost = mandi.weighbridgeCharge;
-
-      // 6. Transit Shrinkage / Spoilage loss
-      const transitDistanceBlocks = mandi.distanceKm / 50;
-      const shrinkageLossPercent = includeShrinkage ? transitDistanceBlocks * perishabilityPer50km : 0;
-      const shrinkageCost = Math.round(grossRevenue * shrinkageLossPercent);
-
-      // Total Deductions
-      const totalDeductions = freightCost + apmcCess + hamaliCost + weighbridgeCost + shrinkageCost;
-
-      // True Net In-Hand Revenue
-      const netRevenue = grossRevenue - totalDeductions;
-      const netPerQtl = Math.round(netRevenue / quantityQtl);
-      const grossPerQtl = modalPrice;
-
-      return {
-        mandiId: mandi.id,
-        mandiName: mandi.name,
-        district: mandi.district,
-        state: mandi.state,
-        distanceKm: mandi.distanceKm,
-        travelTimeHours: mandi.travelTimeHours,
-        modalPrice,
-        minPrice,
-        maxPrice,
-        grossRevenue,
-        freightCost,
-        apmcCess,
-        hamaliCost,
-        weighbridgeCost,
-        shrinkageCost,
-        totalDeductions,
-        netRevenue,
-        netPerQtl,
-        grossPerQtl,
-        shrinkageLossPercent: (shrinkageLossPercent * 100).toFixed(1),
-      };
-    }).sort((a, b) => b.netRevenue - a.netRevenue);
-  }, [cropId, quantityQtl, selectedVehicle, customFreightRate, includeShrinkage, perishabilityPer50km, selectedCrop]);
-
-  const optimalMandi = mandiEconomics[0];
-  const nearestMandi = [...mandiEconomics].sort((a, b) => a.distanceKm - b.distanceKm)[0];
-  const extraGainVsNearest = optimalMandi ? optimalMandi.netRevenue - nearestMandi.netRevenue : 0;
-
-  // Chart Data preparation
-  const chartData = mandiEconomics.slice(0, 5).map((m) => ({
-    name: m.mandiName.split(" ")[0],
-    "Gross Revenue": m.grossRevenue,
-    "Transport & Fees": m.totalDeductions,
-    "Net Cash In-Hand": m.netRevenue,
+  // Chart data
+  const chartData = calculations.map((c) => ({
+    name: c.name.split(" ")[0],
+    "Gross Revenue": c.grossRevenue,
+    "Transit & Fees": (isPooled ? c.pooledTransitCost : c.soloTransitCost) + c.statutoryFees + c.spoilageLoss,
+    "Net Cash": isPooled ? c.netCashPooled : c.netCashSolo,
   }));
+
+  // Web Speech API — Kannada vernacular
+  const handleSpeak = () => {
+    if (!window.speechSynthesis) {
+      toast.error("Web Speech API not supported in this browser.");
+      return;
+    }
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+    const utter = new SpeechSynthesisUtterance(KANNADA_AUDIO_BRIEFING);
+    utter.lang = "kn-IN";
+    utter.rate = 0.9;
+    utter.onend = () => setIsSpeaking(false);
+    utter.onerror = () => setIsSpeaking(false);
+    window.speechSynthesis.speak(utter);
+    setIsSpeaking(true);
+    toast.success("▶ Playing Kannada mandi briefing…");
+  };
 
   // CSV Export
   const handleExportCSV = () => {
     const headers = [
-      "Mandi Name",
-      "District",
-      "Distance (km)",
-      "Modal Rate (₹/Qtl)",
-      "Gross Revenue (₹)",
-      "Transport Freight (₹)",
-      "APMC Cess (₹)",
-      "Hamali (₹)",
-      "Weighbridge (₹)",
-      "Shrinkage Loss (₹)",
-      "Total Deductions (₹)",
-      "True Net Revenue (₹)",
-      "Net Rate (₹/Qtl)"
+      "Mandi Name", "Distance (km)", "Market Rate (₹/Qtl)", "Gross Revenue (₹)",
+      "Solo Transit (₹)", "Pooled Transit (₹)", "Spoilage Loss (₹)",
+      "Statutory Fees (₹)", "Net Cash Solo (₹)", "Net Cash Pooled (₹)"
     ];
-
-    const rows = mandiEconomics.map((m) => [
-      `"${m.mandiName}"`,
-      `"${m.district}"`,
-      m.distanceKm,
-      m.modalPrice,
-      m.grossRevenue,
-      m.freightCost,
-      m.apmcCess,
-      m.hamaliCost,
-      m.weighbridgeCost,
-      m.shrinkageCost,
-      m.totalDeductions,
-      m.netRevenue,
-      m.netPerQtl
+    const rows = calculations.map((c) => [
+      `"${c.name}"`, c.distanceKm, c.marketRatePerQtl, c.grossRevenue,
+      c.soloTransitCost, c.pooledTransitCost, c.spoilageLoss,
+      c.statutoryFees, c.netCashSolo, c.netCashPooled
     ]);
-
-    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `KrishiRate_Profit_Analysis_${selectedCrop.name}_${quantityQtl}Qtl.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success("Mandi Net Revenue Report downloaded as CSV!");
+    const csv = "data:text/csv;charset=utf-8," +
+      [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const a = document.createElement("a");
+    a.href = encodeURI(csv);
+    a.download = `VajraYield_${selectedCrop.name}_${quantityKg}kg.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    toast.success("VajraYield Net Revenue Report downloaded!");
   };
 
-  // WhatsApp Share Text
+  // WhatsApp Share
   const handleShareWhatsApp = () => {
-    const cropName = translateItemName(selectedCrop.name, language, "commodity");
-    const text = `🌾 *Krishi Rate - Net Mandi Revenue Analysis*\n` +
-      `📦 *Crop:* ${cropName} | *Quantity:* ${quantityQtl} Quintals\n` +
-      `🏆 *Best Mandi:* ${optimalMandi.mandiName}\n` +
-      `💰 *True In-Hand Net Cash:* ₹${optimalMandi.netRevenue.toLocaleString('en-IN')} (₹${optimalMandi.netPerQtl}/Qtl)\n` +
-      `🚚 *Transport & Fees:* -₹${optimalMandi.totalDeductions.toLocaleString('en-IN')}\n` +
-      (extraGainVsNearest > 0 ? `✨ *Extra Profit vs Nearest Mandi:* +₹${extraGainVsNearest.toLocaleString('en-IN')}\n` : '') +
-      `Generated on Krishi Rates Rural Market Intelligence Platform.`;
-
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(text);
-      toast.success(getMarketTranslation("whatsappSharedMsg", language));
-    }
-
-    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
-    window.open(whatsappUrl, "_blank");
+    if (!winner) return;
+    const net = isPooled ? winner.netCashPooled : winner.netCashSolo;
+    const text =
+      `🌾 *VajraYield – HPL 2026 Net Mandi Revenue*\n` +
+      `📍 Origin: ${origin}\n` +
+      `🌱 Crop: ${selectedCrop.name} | Qty: ${quantityKg} kg\n` +
+      `🏆 Best Mandi: ${winner.name}\n` +
+      `💰 Net In-Hand: ₹${net.toLocaleString("en-IN")}\n` +
+      `🚚 ${isPooled ? "Pooled" : "Solo"} Transit: ₹${(isPooled ? winner.pooledTransitCost : winner.soloTransitCost).toLocaleString("en-IN")}\n` +
+      `Build For Udupi! | SMVITM Bantakal | PS 02`;
+    if (navigator.clipboard) navigator.clipboard.writeText(text);
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, "_blank");
+    toast.success("Shared on WhatsApp!");
   };
 
   return (
     <div className="space-y-6">
-      {/* Top Banner */}
+      {/* Header Banner */}
       <Card className="border-emerald-500/20 bg-gradient-to-br from-emerald-500/10 via-background to-amber-500/10 dark:from-emerald-950/30">
         <CardHeader className="pb-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
                 <Badge className="bg-emerald-600 text-white text-xs">
-                  <Calculator className="w-3 h-3 mr-1" /> PS 02 Net Revenue Engine
+                  <Calculator className="w-3 h-3 mr-1" /> VajraYield Net Revenue Engine
                 </Badge>
-                <Badge variant="outline" className="text-emerald-700 border-emerald-300">
-                  Transparent In-Hand Cash Audit
+                <Badge variant="outline" className="text-amber-700 border-amber-300 text-xs">
+                  Bantakal–Udupi Belt
                 </Badge>
               </div>
-              <CardTitle className="text-2xl font-bold text-foreground flex items-center gap-2">
+              <CardTitle className="text-xl font-bold text-foreground flex items-center gap-2">
                 💰 {getMarketTranslation("calcTitle", language)}
               </CardTitle>
               <CardDescription className="text-sm text-muted-foreground mt-1">
                 {getMarketTranslation("calcSubtitle", language)}
               </CardDescription>
             </div>
-
-            {/* Quick Export CTAs */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSpeak}
+                className={`flex items-center gap-1.5 text-xs ${isSpeaking ? "border-emerald-500 text-emerald-700 bg-emerald-50 dark:bg-emerald-950" : ""}`}
+                aria-label="Listen to live mandi rates in Kannada"
+                id="btn-listen-mandi-rates"
+              >
+                <Volume2 className={`w-3.5 h-3.5 ${isSpeaking ? "animate-pulse text-emerald-600" : ""}`} />
+                {isSpeaking ? "Stop Audio" : "ಕನ್ನಡ ಆಡಿಯೊ ಬ್ರೀಫಿಂಗ್"}
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleExportCSV}
                 className="flex items-center gap-1.5 text-xs border-emerald-300 hover:bg-emerald-50 text-emerald-800 dark:hover:bg-emerald-950"
+                id="btn-export-csv"
               >
                 <Download className="w-3.5 h-3.5" />
-                {getMarketTranslation("exportPdf", language)}
+                Export CSV
               </Button>
               <Button
                 size="sm"
                 onClick={handleShareWhatsApp}
                 className="flex items-center gap-1.5 text-xs bg-emerald-700 hover:bg-emerald-800 text-white font-medium"
+                id="btn-share-whatsapp"
               >
                 <Share2 className="w-3.5 h-3.5" />
-                {getMarketTranslation("shareWhatsapp", language)}
+                WhatsApp
               </Button>
             </div>
           </div>
         </CardHeader>
       </Card>
 
-      {/* Input Configuration & Winner Spotlight Grid */}
+      {/* Reference Scenario Insight Panel */}
+      {isReferenceScenario && (
+        <div className="space-y-3">
+          {showMangaluruWarning && adiUdupi && mangaluru && (
+            <div
+              className="flex items-start gap-3 p-4 rounded-xl border border-amber-400/50 bg-amber-50/80 dark:bg-amber-950/30"
+              role="alert"
+              aria-live="polite"
+            >
+              <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+              <div className="space-y-1 flex-1">
+                <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+                  ⚠️ DECEPTIVE SPREAD ALERT — Mangaluru Bunder
+                </p>
+                <p className="text-xs text-amber-700 dark:text-amber-400">
+                  Mangaluru's gross rate of <strong>₹{mangaluru.marketRatePerQtl}/Qtl</strong> appears
+                  ₹{mangaluru.marketRatePerQtl - adiUdupi.marketRatePerQtl}/Qtl higher — but{" "}
+                  <strong>coastal spoilage + Hejamadi toll + ₹{mangaluru.soloTransitCost.toLocaleString("en-IN")} transit</strong> erodes
+                  it to a net of only <strong>₹{mangaluru.netCashSolo.toLocaleString("en-IN")}</strong>.{" "}
+                  Adi Udupi APMC yields <strong className="text-emerald-700">₹{(adiUdupi.netCashSolo - mangaluru.netCashSolo).toLocaleString("en-IN")} MORE</strong> in hand.
+                </p>
+              </div>
+              <Badge className="bg-amber-500 text-white text-[10px] whitespace-nowrap">
+                Net Gap: ₹{(adiUdupi.netCashSolo - mangaluru.netCashSolo).toLocaleString("en-IN")}
+              </Badge>
+            </div>
+          )}
+          {showPoolingCelebration && mangaluru && (
+            <div
+              className="flex items-start gap-3 p-4 rounded-xl border border-emerald-400/50 bg-emerald-50/80 dark:bg-emerald-950/30"
+              role="status"
+              aria-live="polite"
+            >
+              <Sparkles className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+              <div className="space-y-1 flex-1">
+                <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">
+                  🎉 CLUSTER POOLING UNLOCKED — Shirva–Bantakal Network
+                </p>
+                <p className="text-xs text-emerald-700 dark:text-emerald-400">
+                  Freight split with <strong>2 Shirva smallholders</strong>! Mangaluru Bunder net
+                  jumps to <strong>₹{mangaluru.netCashPooled.toLocaleString("en-IN")}</strong>
+                  {" "}(saving ₹{(mangaluru.soloTransitCost - mangaluru.pooledTransitCost).toLocaleString("en-IN")} on freight alone).
+                  This now <strong>beats Adi Udupi</strong> by ₹{(mangaluru.netCashPooled - (calculations.find(c => c.id === "mandi_adi_udupi")?.netCashPooled ?? 0)).toLocaleString("en-IN")}!
+                </p>
+              </div>
+              <Badge className="bg-emerald-600 text-white text-[10px] whitespace-nowrap">
+                +₹{(mangaluru.netCashPooled - (calculations.find(c => c.id === "mandi_adi_udupi")?.netCashPooled ?? 0)).toLocaleString("en-IN")} Extra
+              </Badge>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Main Grid: Inputs + Winner */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left: Interactive Input Panel (5 Cols) */}
+        {/* LEFT: Interactive Input Panel */}
         <Card className="lg:col-span-5 border shadow-sm">
           <CardHeader className="pb-3 border-b bg-muted/20">
             <CardTitle className="text-base font-semibold flex items-center gap-2">
               <Coins className="w-4 h-4 text-emerald-600" />
-              Harvest & Transport Inputs
+              Harvest & Route Configuration
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-4 space-y-4">
-            {/* 1. Crop Selector */}
+          <CardContent className="p-4 space-y-5">
+            {/* 1. Origin Village */}
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-muted-foreground">
-                {getMarketTranslation("selectCrop", language)}
+              <Label className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+                <MapPin className="w-3 h-3" /> Origin Village / Cluster
               </Label>
-              <Select value={cropId} onValueChange={setCropId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose commodity" />
+              <Select value={origin} onValueChange={setOrigin}>
+                <SelectTrigger id="select-origin-cluster">
+                  <SelectValue placeholder="Choose origin cluster" />
                 </SelectTrigger>
                 <SelectContent>
-                  {RURAL_COMMODITIES.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {translateItemName(c.name, language, "commodity")} (Base: ₹{c.modalPrice}/Qtl)
+                  {ORIGIN_CLUSTERS.map((o) => (
+                    <SelectItem key={o.id} value={o.name}>
+                      {o.name} {o.distanceFromHubKm > 0 ? `(${o.distanceFromHubKm} km from Hub)` : "(Default Hub)"}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            {/* 2. Harvest Quantity */}
+            {/* 2. Crop Selector */}
             <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+                <Leaf className="w-3 h-3" /> {getMarketTranslation("selectCrop", language)}
+              </Label>
+              <Select value={cropId} onValueChange={setCropId}>
+                <SelectTrigger id="select-crop">
+                  <SelectValue placeholder="Choose crop" />
+                </SelectTrigger>
+                <SelectContent>
+                  {RURAL_COMMODITIES.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name} — ₹{c.modalPrice.toLocaleString("en-IN")}/Qtl
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedCrop && (
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge variant="outline" className="text-[10px]">
+                    {selectedCrop.category}
+                  </Badge>
+                  {selectedCrop.id !== "arecanut" && (
+                    <Badge variant="outline" className="text-[10px] border-amber-400 text-amber-700">
+                      ⚠ Perishable
+                    </Badge>
+                  )}
+                  {selectedCrop.id === "arecanut" && (
+                    <Badge variant="outline" className="text-[10px] border-emerald-400 text-emerald-700">
+                      ✓ Non-perishable
+                    </Badge>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* 3. Quantity Slider + Input */}
+            <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label className="text-xs font-semibold text-muted-foreground">
-                  {getMarketTranslation("harvestQuantity", language)}
+                  Quantity (kg)
                 </Label>
-                <span className="text-xs text-muted-foreground font-medium">
-                  {quantityQtl} Quintals ({(quantityQtl / 10).toFixed(1)} Tonnes)
+                <span className="text-xs font-bold text-emerald-700">
+                  {quantityKg.toLocaleString("en-IN")} kg = {(quantityKg / 100).toFixed(1)} Qtl
                 </span>
               </div>
-              <div className="flex items-center gap-3">
+              <Slider
+                id="slider-quantity-kg"
+                min={50}
+                max={2000}
+                step={50}
+                value={[quantityKg]}
+                onValueChange={([v]) => setQuantityKg(v)}
+                className="w-full"
+                aria-label="Harvest quantity in kilograms"
+              />
+              <div className="flex items-center gap-2">
                 <Input
+                  id="input-quantity-kg"
                   type="number"
-                  min={1}
-                  max={500}
-                  value={quantityQtl}
-                  onChange={(e) => setQuantityQtl(Math.max(1, Number(e.target.value) || 1))}
+                  min={50}
+                  max={2000}
+                  step={50}
+                  value={quantityKg}
+                  onChange={(e) => {
+                    const v = Number(e.target.value);
+                    if (v >= 50 && v <= 2000) setQuantityKg(v);
+                  }}
                   className="w-28 font-bold text-center"
+                  aria-label="Enter quantity in kilograms"
                 />
-                <div className="flex items-center gap-1.5 flex-1">
-                  {[20, 50, 100, 200].map((quickVal) => (
+                <div className="flex gap-1 flex-wrap">
+                  {[100, 250, 500, 1000].map((v) => (
                     <Button
-                      key={quickVal}
+                      key={v}
                       type="button"
-                      variant={quantityQtl === quickVal ? "default" : "outline"}
+                      variant={quantityKg === v ? "default" : "outline"}
                       size="sm"
-                      onClick={() => setQuantityQtl(quickVal)}
-                      className={`h-8 text-xs flex-1 px-1 ${
-                        quantityQtl === quickVal ? "bg-emerald-700 text-white" : ""
-                      }`}
+                      onClick={() => setQuantityKg(v)}
+                      className={`h-7 text-xs px-2 ${quantityKg === v ? "bg-emerald-700 text-white" : ""}`}
+                      id={`btn-qty-${v}`}
                     >
-                      {quickVal} Q
+                      {v}kg
                     </Button>
                   ))}
                 </div>
               </div>
             </div>
 
-            {/* 3. Transport Vehicle Selection */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <Label className="text-xs font-semibold text-muted-foreground">
-                  {getMarketTranslation("selectVehicle", language)}
-                </Label>
-                <Badge variant="outline" className="text-[10px]">
-                  Cap: {selectedVehicle.capacityQuintals} Qtl
-                </Badge>
-              </div>
-              <Select value={selectedVehicleId} onValueChange={setSelectedVehicleId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose vehicle type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {TRANSPORT_VEHICLES.map((v) => (
-                    <SelectItem key={v.id} value={v.id}>
-                      {v.name} (₹{v.ratePerKm}/km)
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-[11px] text-muted-foreground">
-                💡 {selectedVehicle.recommendedFor}
+            {/* 4. Innovation Switches */}
+            <div className="pt-2 border-t space-y-3">
+              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+                Innovation Toggles
               </p>
-            </div>
 
-            {/* 4. Custom Freight Rate Override */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-muted-foreground">
-                {getMarketTranslation("customFreightRate", language)} (Optional Override)
-              </Label>
-              <Input
-                type="number"
-                placeholder={`Standard: ₹${selectedVehicle.ratePerKm}/km`}
-                value={customFreightRate}
-                onChange={(e) => setCustomFreightRate(e.target.value ? Number(e.target.value) : "")}
-              />
-            </div>
-
-            {/* 5. Transit Shrinkage Toggle */}
-            <div className="pt-2 border-t flex items-center justify-between">
-              <div className="space-y-0.5 pr-2">
-                <Label className="text-xs font-medium text-foreground cursor-pointer">
-                  {getMarketTranslation("shrinkageRisk", language)}
-                </Label>
-                <p className="text-[10px] text-muted-foreground">
-                  {getMarketTranslation("shrinkageRiskDesc", language)}
-                </p>
+              {/* Pooling Toggle */}
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-0.5 pr-2">
+                  <Label className="text-xs font-medium text-foreground flex items-center gap-1 cursor-pointer" htmlFor="switch-pooling">
+                    <Users className="w-3.5 h-3.5 text-emerald-600" />
+                    Shared Freight / Cluster Pooling
+                  </Label>
+                  <p className="text-[10px] text-muted-foreground">
+                    Bantakal–Shirva Network: Split cost with 2 smallholders (~2.8× freight reduction)
+                  </p>
+                </div>
+                <Switch
+                  id="switch-pooling"
+                  checked={isPooled}
+                  onCheckedChange={setIsPooled}
+                  aria-label="Enable cluster freight pooling with Shirva smallholders"
+                />
               </div>
-              <Switch checked={includeShrinkage} onCheckedChange={setIncludeShrinkage} />
+
+              {/* Perishability Toggle */}
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-0.5 pr-2">
+                  <Label className="text-xs font-medium text-foreground flex items-center gap-1 cursor-pointer" htmlFor="switch-perishability">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
+                    Coastal Humidity & Midday Spoilage Factor
+                  </Label>
+                  <p className="text-[10px] text-muted-foreground">
+                    Tomato: 2.5%/hr · Mattu Gulla: 1.8%/hr · Jasmine: 5.0%/hr · Arecanut: 0%
+                  </p>
+                </div>
+                <Switch
+                  id="switch-perishability"
+                  checked={applyPerishability}
+                  onCheckedChange={setApplyPerishability}
+                  aria-label="Apply coastal humidity perishability factor"
+                />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Right: Optimal Mandi Crown & Profit Spotlight (7 Cols) */}
-        {optimalMandi && (
+        {/* RIGHT: Winner Spotlight */}
+        {winner && (
           <Card className="lg:col-span-7 border-emerald-500 shadow-md bg-gradient-to-br from-emerald-500/10 via-background to-emerald-50/50 dark:from-emerald-950/40">
             <CardHeader className="pb-3 border-b bg-emerald-600/10">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold">
                     🏆
@@ -401,34 +461,27 @@ export const NetRevenueCalculator = ({
                       {getMarketTranslation("optimalMandiBadge", language)}
                     </CardTitle>
                     <p className="text-xs text-muted-foreground">
-                      Yields the highest net cash in hand for your {quantityQtl} Quintals
+                      Highest net cash for {quantityKg.toLocaleString("en-IN")} kg from {origin}
                     </p>
                   </div>
                 </div>
-
-                {extraGainVsNearest > 0 && (
-                  <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-2.5 py-1">
-                    +₹{extraGainVsNearest.toLocaleString("en-IN")} Extra Cash
-                  </Badge>
-                )}
+                <Badge className="bg-emerald-600 text-white text-xs px-2.5 py-1">
+                  {isPooled ? "Pooled Mode" : "Solo Mode"}
+                </Badge>
               </div>
             </CardHeader>
-
             <CardContent className="p-4 space-y-4">
-              {/* Winner Header */}
+              {/* Winner Info */}
               <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
                 <div>
-                  <h3 className="text-xl font-black text-foreground">
-                    {optimalMandi.mandiName}
-                  </h3>
+                  <h3 className="text-xl font-black text-foreground">{winner.name}</h3>
                   <p className="text-xs text-muted-foreground">
-                    {optimalMandi.district}, {optimalMandi.state} • {optimalMandi.distanceKm} km away (~{optimalMandi.travelTimeHours} hrs transit)
+                    {winner.distanceKm} km · Market Rate: ₹{winner.marketRatePerQtl.toLocaleString("en-IN")}/Qtl
                   </p>
                 </div>
-                <div className="text-left sm:text-right">
-                  <div className="text-xs text-muted-foreground">Gross Modal Rate</div>
-                  <div className="text-lg font-bold text-foreground">₹{optimalMandi.modalPrice}/Qtl</div>
-                </div>
+                <Badge variant="outline" className="text-emerald-700 border-emerald-400">
+                  {winner.distanceKm} km from {origin.split(" ")[0]}
+                </Badge>
               </div>
 
               {/* Big Net Cash Box */}
@@ -438,183 +491,95 @@ export const NetRevenueCalculator = ({
                     {getMarketTranslation("netCashInHand", language)}
                   </div>
                   <div className="text-3xl sm:text-4xl font-black tracking-tight">
-                    ₹{optimalMandi.netRevenue.toLocaleString("en-IN")}
+                    ₹{(isPooled ? winner.netCashPooled : winner.netCashSolo).toLocaleString("en-IN")}
                   </div>
                   <div className="text-xs text-emerald-100 mt-1">
-                    Net Realization: <strong>₹{optimalMandi.netPerQtl}/Qtl</strong> (after all costs)
+                    ₹{Math.round((isPooled ? winner.netCashPooled : winner.netCashSolo) / (quantityKg / 100)).toLocaleString("en-IN")}/Qtl net after all costs
                   </div>
                 </div>
-
                 <div className="bg-emerald-700/60 rounded-lg p-3 text-xs space-y-1 sm:text-right border border-emerald-500/40">
-                  <div className="text-emerald-100 font-medium">Breakdown Summary</div>
-                  <div>Gross Value: ₹{optimalMandi.grossRevenue.toLocaleString("en-IN")}</div>
-                  <div className="text-amber-200">
-                    Total Deductions: -₹{optimalMandi.totalDeductions.toLocaleString("en-IN")}
-                  </div>
+                  <div className="text-emerald-100 font-medium">Transparent Breakdown</div>
+                  <div>Gross Value: ₹{winner.grossRevenue.toLocaleString("en-IN")}</div>
+                  <div>Freight & Fuel: −₹{(isPooled ? winner.pooledTransitCost : winner.soloTransitCost).toLocaleString("en-IN")}</div>
+                  <div>APMC Cess + Hamali: −₹{winner.statutoryFees.toLocaleString("en-IN")}</div>
+                  {winner.spoilageLoss > 0 && (
+                    <div>Coastal Spoilage: −₹{winner.spoilageLoss.toLocaleString("en-IN")}</div>
+                  )}
                 </div>
               </div>
 
-              {/* Transparent Cost Deductions Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                <div className="p-2.5 rounded bg-muted/50 border">
-                  <span className="text-muted-foreground block text-[11px]">
-                    {getMarketTranslation("freightCost", language)}
-                  </span>
-                  <span className="font-bold text-foreground">
-                    -₹{optimalMandi.freightCost.toLocaleString("en-IN")}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground block mt-0.5">
-                    ({optimalMandi.distanceKm} km transit)
-                  </span>
-                </div>
-
-                <div className="p-2.5 rounded bg-muted/50 border">
-                  <span className="text-muted-foreground block text-[11px]">
-                    {getMarketTranslation("apmcCess", language)}
-                  </span>
-                  <span className="font-bold text-foreground">
-                    -₹{optimalMandi.apmcCess.toLocaleString("en-IN")}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground block mt-0.5">
-                    (Statutory Cess)
-                  </span>
-                </div>
-
-                <div className="p-2.5 rounded bg-muted/50 border">
-                  <span className="text-muted-foreground block text-[11px]">
-                    {getMarketTranslation("handlingHamali", language)}
-                  </span>
-                  <span className="font-bold text-foreground">
-                    -₹{optimalMandi.hamaliCost.toLocaleString("en-IN")}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground block mt-0.5">
-                    (Loading & Weighing)
-                  </span>
-                </div>
-
-                <div className="p-2.5 rounded bg-muted/50 border">
-                  <span className="text-muted-foreground block text-[11px]">
-                    {getMarketTranslation("shrinkageLoss", language)}
-                  </span>
-                  <span className="font-bold text-foreground">
-                    -₹{optimalMandi.shrinkageCost.toLocaleString("en-IN")}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground block mt-0.5">
-                    ({optimalMandi.shrinkageLossPercent}% transit risk)
-                  </span>
-                </div>
+              {/* Mandi Comparison Cards */}
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  All 4 Udupi-Belt Mandis Ranked
+                </p>
+                {calculations.map((c, i) => {
+                  const net = isPooled ? c.netCashPooled : c.netCashSolo;
+                  const isTop = i === 0;
+                  return (
+                    <div
+                      key={c.id}
+                      className={`flex items-center justify-between p-3 rounded-lg border text-sm transition-all ${isTop
+                          ? "border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/30"
+                          : "border-border bg-muted/30"
+                        }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className={`w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center flex-shrink-0 ${isTop ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground"
+                          }`}>
+                          {i + 1}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="font-semibold text-xs truncate">{c.name}</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {c.distanceKm} km · ₹{c.marketRatePerQtl.toLocaleString("en-IN")}/Qtl gross
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <div className={`font-black text-sm ${isTop ? "text-emerald-700 dark:text-emerald-400" : "text-foreground"}`}>
+                          ₹{net.toLocaleString("en-IN")}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground">Net In-Hand</div>
+                        {/* Line item detail */}
+                        <div className="text-[9px] text-muted-foreground/70 mt-0.5">
+                          Transit: ₹{(isPooled ? c.pooledTransitCost : c.soloTransitCost).toLocaleString("en-IN")} · Fees: ₹{c.statutoryFees} · Spoilage: ₹{c.spoilageLoss}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
         )}
       </div>
 
-      {/* Comparison Table Across All Mandis */}
-      <Card className="border">
-        <CardHeader className="pb-3 border-b">
-          <CardTitle className="text-lg font-bold flex items-center justify-between">
-            <span>Detailed Mandi Net Profit Ranking Matrix</span>
-            <Badge variant="outline" className="text-xs font-normal">
-              Sorted by Highest In-Hand Cash
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-0 overflow-x-auto">
-          <table className="w-full text-xs text-left border-collapse">
-            <thead className="bg-muted text-muted-foreground font-semibold border-b">
-              <tr>
-                <th className="p-3">Rank & Mandi</th>
-                <th className="p-3">Distance</th>
-                <th className="p-3">Gross Rate</th>
-                <th className="p-3">Gross Value</th>
-                <th className="p-3">Transport Freight</th>
-                <th className="p-3">Mandi Cess + Hamali</th>
-                <th className="p-3">Shrinkage Loss</th>
-                <th className="p-3 bg-emerald-50/50 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-300 font-bold">
-                  True Net In-Hand (₹)
-                </th>
-                <th className="p-3 text-right">Net ₹/Qtl</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {mandiEconomics.map((m, rank) => {
-                const isWinner = rank === 0;
-                return (
-                  <tr
-                    key={m.mandiId}
-                    className={`hover:bg-muted/50 transition-colors ${
-                      isWinner ? "bg-emerald-50/30 dark:bg-emerald-950/20 font-medium" : ""
-                    }`}
-                  >
-                    <td className="p-3">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                            isWinner
-                              ? "bg-emerald-600 text-white"
-                              : "bg-muted text-muted-foreground"
-                          }`}
-                        >
-                          {rank + 1}
-                        </span>
-                        <div>
-                          <span className="font-semibold text-foreground">{m.mandiName}</span>
-                          <span className="text-[10px] text-muted-foreground block">{m.district}</span>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-3 text-muted-foreground">
-                      {m.distanceKm} km ({m.travelTimeHours}h)
-                    </td>
-                    <td className="p-3 font-semibold text-foreground">₹{m.modalPrice}</td>
-                    <td className="p-3">₹{m.grossRevenue.toLocaleString("en-IN")}</td>
-                    <td className="p-3 text-rose-600 font-medium">-₹{m.freightCost.toLocaleString("en-IN")}</td>
-                    <td className="p-3 text-muted-foreground">-₹{(m.apmcCess + m.hamaliCost + m.weighbridgeCost).toLocaleString("en-IN")}</td>
-                    <td className="p-3 text-muted-foreground">-₹{m.shrinkageCost.toLocaleString("en-IN")}</td>
-                    <td className="p-3 bg-emerald-50/50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-300 font-black text-sm">
-                      ₹{m.netRevenue.toLocaleString("en-IN")}
-                    </td>
-                    <td className="p-3 text-right font-bold text-foreground">
-                      ₹{m.netPerQtl}/Qtl
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </CardContent>
-      </Card>
-
-      {/* Recharts Bar Chart: Gross vs Net vs Fees */}
-      <Card className="border">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold">
-            📊 Visual Comparison: Gross Revenue vs In-Hand Net Cash
-          </CardTitle>
-          <CardDescription className="text-xs">
-            Notice how higher freight for distant mandis can still yield significantly higher net cash due to favorable wholesale price spreads.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="h-72 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 20, right: 20, left: 10, bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} tickFormatter={(val) => `₹${val / 1000}k`} />
-                <Tooltip
-                  formatter={(val: any) => [`₹${Number(val).toLocaleString("en-IN")}`, ""]}
-                  contentStyle={{ backgroundColor: "#1e293b", borderRadius: "8px", color: "#fff", fontSize: "12px" }}
-                />
-                <Legend wrapperStyle={{ fontSize: "12px", paddingTop: "10px" }} />
-                <Bar dataKey="Gross Revenue" fill="#94a3b8" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Transport & Fees" fill="#f43f5e" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Net Cash In-Hand" fill="#059669" radius={[4, 4, 0, 0]} />
+      {/* Bar Chart */}
+      {chartData.length > 0 && (
+        <Card className="border shadow-sm">
+          <CardHeader className="pb-2 border-b">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-emerald-600" />
+              Revenue vs. Cost Waterfall — {selectedCrop.name} · {quantityKg.toLocaleString("en-IN")} kg
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4">
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} />
+                <Tooltip formatter={(v: number) => [`₹${v.toLocaleString("en-IN")}`, ""]} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Bar dataKey="Gross Revenue" fill="hsl(142 76% 36%)" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="Transit & Fees" fill="hsl(38 92% 50%)" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="Net Cash" fill="hsl(158 64% 52%)" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

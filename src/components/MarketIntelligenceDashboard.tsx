@@ -1,25 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { 
-  TrendingUp, 
-  MapPin, 
-  Calculator, 
-  LineChart, 
-  Truck, 
-  Sparkles, 
-  ShieldCheck, 
-  ArrowUpRight,
-  Zap,
-  CheckCircle2
+import {
+  TrendingUp,
+  MapPin,
+  Calculator,
+  LineChart,
+  ArrowUpRight
 } from "lucide-react";
 import { CommodityPriceDiscovery } from "./CommodityPriceDiscovery";
 import { MandiComparison } from "./MandiComparison";
 import { NetRevenueCalculator } from "./NetRevenueCalculator";
 import { DemandForecasting } from "./DemandForecasting";
-import { SupplyChainTransparency } from "./SupplyChainTransparency";
 import { Language } from "@/utils/translations";
 import { getMarketTranslation } from "@/utils/marketTranslations";
 import { RURAL_COMMODITIES } from "@/data/ruralMarketData";
@@ -40,11 +32,26 @@ export const MarketIntelligenceDashboard = ({
   selectedMarket = "",
 }: MarketIntelligenceDashboardProps) => {
   const [activeTab, setActiveTab] = useState<string>("discovery");
-  const [calculatorCropId, setCalculatorCropId] = useState<string>("onion");
+  const [calculatorCropId, setCalculatorCropId] = useState<string>("tomato");
   const [calculatorMandiId, setCalculatorMandiId] = useState<string | undefined>(undefined);
 
+  // Listen for navigation tab events from Header
+  useEffect(() => {
+    const handleTabSwitch = (e: any) => {
+      if (e.detail) {
+        setActiveTab(e.detail);
+      }
+    };
+    window.addEventListener("switch_dashboard_tab", handleTabSwitch);
+    return () => window.removeEventListener("switch_dashboard_tab", handleTabSwitch);
+  }, []);
+
   // Top gaining commodity
-  const topGainer = [...RURAL_COMMODITIES].sort((a, b) => b.dailyChange - a.dailyChange)[0];
+  const topGainer = [...RURAL_COMMODITIES].sort((a, b) => b.dailyChange - a.dailyChange)[0] || {
+    name: "Tomato",
+    dailyChange: 2.3,
+    modalPrice: 2200,
+  };
 
   const handleNavigateToCalculator = (cropId: string, mandiId: string) => {
     setCalculatorCropId(cropId);
@@ -58,7 +65,7 @@ export const MarketIntelligenceDashboard = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div id="dashboard-tabs-container" className="space-y-6 scroll-mt-20">
       {/* Top Quick KPI Metric Highlights Bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {/* KPI 1: Top Arbitrage Spread */}
@@ -69,10 +76,10 @@ export const MarketIntelligenceDashboard = ({
                 {getMarketTranslation("bestOpportunity", language)}
               </span>
               <div className="text-lg font-black text-foreground mt-0.5">
-                Lasalgaon APMC
+                Adi Udupi APMC
               </div>
               <span className="text-xs text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-0.5">
-                <ArrowUpRight className="w-3.5 h-3.5" /> +₹370/Qtl Spread
+                <ArrowUpRight className="w-3.5 h-3.5" /> +₹500/Qtl vs Karkala
               </span>
             </div>
             <div className="w-9 h-9 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-700 dark:text-emerald-300 font-bold">
@@ -142,11 +149,11 @@ export const MarketIntelligenceDashboard = ({
         </Card>
       </div>
 
-      {/* Main Tabbed Navigation */}
+      {/* Main Tabbed Navigation (Clean 4-Tab Focused Layout) */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
         <div className="bg-card border rounded-xl p-1.5 shadow-sm">
-          <TabsList className="grid grid-cols-2 md:grid-cols-5 w-full h-auto gap-1 bg-transparent p-0">
-            {/* Tab 1 */}
+          <TabsList className="grid grid-cols-2 md:grid-cols-4 w-full h-auto gap-1 bg-transparent p-0">
+            {/* Tab 1: Discovery */}
             <TabsTrigger
               value="discovery"
               className="data-[state=active]:bg-emerald-700 data-[state=active]:text-white data-[state=active]:shadow font-semibold text-xs py-2.5 px-2 flex items-center gap-1.5 rounded-lg transition-all"
@@ -155,7 +162,7 @@ export const MarketIntelligenceDashboard = ({
               <span className="truncate">{getMarketTranslation("tabPriceDiscovery", language)}</span>
             </TabsTrigger>
 
-            {/* Tab 2 */}
+            {/* Tab 2: Comparison */}
             <TabsTrigger
               value="comparison"
               className="data-[state=active]:bg-emerald-700 data-[state=active]:text-white data-[state=active]:shadow font-semibold text-xs py-2.5 px-2 flex items-center gap-1.5 rounded-lg transition-all"
@@ -164,7 +171,7 @@ export const MarketIntelligenceDashboard = ({
               <span className="truncate">{getMarketTranslation("tabMandiComparison", language)}</span>
             </TabsTrigger>
 
-            {/* Tab 3 (Hero PS 02 Focus) */}
+            {/* Tab 3: Core Net Revenue Calculator */}
             <TabsTrigger
               value="calculator"
               className="data-[state=active]:bg-emerald-700 data-[state=active]:text-white data-[state=active]:shadow font-semibold text-xs py-2.5 px-2 flex items-center gap-1.5 rounded-lg transition-all relative"
@@ -174,22 +181,13 @@ export const MarketIntelligenceDashboard = ({
               <span className="hidden lg:inline-block w-2 h-2 rounded-full bg-amber-400 absolute top-1 right-1" />
             </TabsTrigger>
 
-            {/* Tab 4 */}
+            {/* Tab 4: Forecast */}
             <TabsTrigger
               value="forecast"
               className="data-[state=active]:bg-emerald-700 data-[state=active]:text-white data-[state=active]:shadow font-semibold text-xs py-2.5 px-2 flex items-center gap-1.5 rounded-lg transition-all"
             >
               <LineChart className="w-4 h-4" />
               <span className="truncate">{getMarketTranslation("tabDemandForecast", language)}</span>
-            </TabsTrigger>
-
-            {/* Tab 5 */}
-            <TabsTrigger
-              value="supplychain"
-              className="data-[state=active]:bg-emerald-700 data-[state=active]:text-white data-[state=active]:shadow font-semibold text-xs py-2.5 px-2 flex items-center gap-1.5 rounded-lg transition-all"
-            >
-              <Truck className="w-4 h-4" />
-              <span className="truncate">{getMarketTranslation("tabSupplyChain", language)}</span>
             </TabsTrigger>
           </TabsList>
         </div>
@@ -224,11 +222,6 @@ export const MarketIntelligenceDashboard = ({
         {/* Tab 4: Demand Forecasting */}
         <TabsContent value="forecast" className="m-0 focus-visible:outline-none">
           <DemandForecasting language={language} />
-        </TabsContent>
-
-        {/* Tab 5: Supply Chain & Warehousing */}
-        <TabsContent value="supplychain" className="m-0 focus-visible:outline-none">
-          <SupplyChainTransparency language={language} />
         </TabsContent>
       </Tabs>
     </div>

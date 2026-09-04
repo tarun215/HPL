@@ -544,12 +544,16 @@ export const marketTranslations = {
     monthlyRent: "నెలవారీ అద్దె",
     enwrLoan: "రసీదుపై 70% బ్యాంక్ రుణం",
     bookSpace: "స్థలం బుక్ చేయండి",
-  }
+  },
+  // Kannada & Tulu — fallback to English via getMarketTranslation
+  kn: {},
+  tulu: {},
 };
 
 export type MarketTranslationKey = keyof typeof marketTranslations.en;
 
 export const getMarketTranslation = (key: MarketTranslationKey, language: Language = 'en'): string => {
-  const langObj = marketTranslations[language] || marketTranslations.en;
-  return (langObj as any)[key] || marketTranslations.en[key] || String(key);
+  const langObj = (marketTranslations as any)[language] || marketTranslations.en;
+  return langObj[key] || marketTranslations.en[key] || String(key);
 };
+

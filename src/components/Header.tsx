@@ -1,15 +1,15 @@
 import { useState } from "react";
-import { Search, Menu, Bell, X, CloudSun, Sprout, Tractor, HelpCircle, ArrowUpRight, TrendingUp, CheckCircle2, User } from "lucide-react";
+import { Search, Menu, Bell, X, TrendingUp, User, Calculator, Truck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
   DialogDescription,
-  DialogFooter 
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Language, getTranslation } from "@/utils/translations";
 import { Link, useLocation } from "react-router-dom";
@@ -29,43 +29,85 @@ export const Header = ({ searchQuery, setSearchQuery, language }: HeaderProps) =
   const activeAlerts = [
     {
       id: "alert-1",
-      title: "Lasalgaon Mandi Onion Arbitrage Spurt",
-      description: "Modal rate jumped +4.6% today (₹2,850/Qtl). Demand is high from southern buyers.",
+      title: "Adi Udupi APMC — Tomato Arbitrage Spurt",
+      description:
+        "Modal rate +2.3% today (₹2,200/Qtl). Coastal buyers actively procuring from Bantakal cluster.",
       time: "15 mins ago",
       type: "bullish",
-      crop: "Onion"
+      crop: "Tomato",
     },
     {
       id: "alert-2",
-      title: "Pimpalgaon Tomato Heavy Arrivals",
-      description: "Peak morning arrivals (1,450 tonnes). Gate congestion moderate (~1.2h queue).",
-      time: "1 hour ago",
+      title: "Mattu Gulla — Peak Harvest Window",
+      description:
+        "Mangaluru Bunder buyers seeking GI-tagged Mattu Gulla. ₹5,800/Qtl. Sell before 11 AM.",
+      time: "42 mins ago",
       type: "warning",
-      crop: "Tomato"
+      crop: "Mattu Gulla",
+    },
+  ];
+
+  const handleNavClick = (tabKey: string) => {
+    // Dispatch event to switch tab inside MarketIntelligenceDashboard
+    window.dispatchEvent(new CustomEvent("switch_dashboard_tab", { detail: tabKey }));
+
+    // Smoothly scroll down to dashboard tabs
+    const targetElement = document.getElementById("dashboard-tabs-container");
+    if (targetElement) {
+      targetElement.scrollIntoView({ behavior: "smooth", block: "start" });
     }
+  };
+
+  const navLinks = [
+    {
+      tab: "discovery",
+      label: "Arbitrage & Mandi Intelligence",
+      icon: <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />,
+      id: "nav-mandi-intelligence",
+    },
+    {
+      tab: "calculator",
+      label: "Net Revenue Maximizer",
+      icon: <Calculator className="w-3.5 h-3.5 text-amber-600" />,
+      id: "nav-net-revenue",
+    },
+    {
+      tab: "calculator", // Points to calculator where Shared Freight Pooling switch lives
+      label: "Pooling Cluster Radar",
+      icon: <Truck className="w-3.5 h-3.5 text-blue-600" />,
+      id: "nav-pooling-radar",
+    },
   ];
 
   return (
     <>
-      <header className="bg-card/95 backdrop-blur-md border-b border-border sticky top-0 z-50 shadow-sm">
+      <header
+        className="bg-card/95 backdrop-blur-md border-b border-border sticky top-0 z-50 shadow-sm"
+        role="banner"
+      >
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16 gap-3">
-            {/* Logo & Title */}
-            <Link to="/" className="flex items-center space-x-3 group">
-              <div className="w-10 h-10 bg-emerald-700 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
-                <span className="text-white font-bold text-xl" role="img" aria-label="Wheat harvest icon">🌾</span>
+            {/* Logo & Brand */}
+            <Link
+              to="/"
+              className="flex items-center space-x-3 group"
+              aria-label="VajraYield Home"
+            >
+              <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform border border-emerald-500/20 bg-white">
+                <img
+                  src="/vajrayield.jpeg"
+                  alt="VajraYield Logo"
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
                   <span className="text-lg font-black text-foreground tracking-tight group-hover:text-emerald-700 transition-colors">
-                    Krishi Rates
+                    VajraYield
                   </span>
-                  <Badge className="bg-emerald-600 text-white text-[10px] px-1.5 py-0 font-semibold">
-                    PS 02
-                  </Badge>
                 </div>
-                <p className="text-[11px] text-muted-foreground font-medium">
-                  Rural Market Intelligence Platform
+                <p className="text-[10px] text-muted-foreground font-medium leading-tight">
+                  Rural Market Intelligence · Build For Udupi!
                 </p>
               </div>
             </Link>
@@ -75,11 +117,12 @@ export const Header = ({ searchQuery, setSearchQuery, language }: HeaderProps) =
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
-                  placeholder={getTranslation('searchPlaceholder', language)}
+                  id="search-mandi-data"
+                  placeholder={getTranslation("searchPlaceholder", language)}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9 pr-8 h-9 bg-muted/60 focus:bg-background border-muted-foreground/20 rounded-lg text-xs"
-                  aria-label="Search agricultural market data"
+                  aria-label="Search Udupi mandi data and commodities"
                 />
                 {searchQuery && (
                   <button
@@ -93,47 +136,24 @@ export const Header = ({ searchQuery, setSearchQuery, language }: HeaderProps) =
               </div>
             </div>
 
-            {/* Desktop Navigation Links */}
-            <nav className="hidden lg:flex items-center space-x-1" aria-label="Main Navigation">
-              <Link to="/">
-                <Button 
-                  variant={location.pathname === "/" ? "secondary" : "ghost"} 
-                  size="sm" 
-                  className={`text-xs font-semibold ${location.pathname === "/" ? "bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300" : ""}`}
+            {/* Desktop Navigation — Safe Tab Navigation (No 404s) */}
+            <nav
+              className="hidden lg:flex items-center space-x-1"
+              aria-label="Primary Navigation — VajraYield"
+            >
+              {navLinks.map((link) => (
+                <Button
+                  key={link.id}
+                  id={link.id}
+                  onClick={() => handleNavClick(link.tab)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs font-semibold flex items-center gap-1 hover:bg-emerald-50 hover:text-emerald-800 dark:hover:bg-emerald-950 dark:hover:text-emerald-300"
                 >
-                  Mandi Intelligence
+                  {link.icon}
+                  {link.label}
                 </Button>
-              </Link>
-              <Link to="/weather">
-                <Button 
-                  variant={location.pathname === "/weather" ? "secondary" : "ghost"} 
-                  size="sm" 
-                  className="text-xs font-medium flex items-center gap-1"
-                >
-                  <CloudSun className="w-3.5 h-3.5 text-amber-500" />
-                  {getTranslation('weather', language)}
-                </Button>
-              </Link>
-              <Link to="/crop-care">
-                <Button 
-                  variant={location.pathname === "/crop-care" ? "secondary" : "ghost"} 
-                  size="sm" 
-                  className="text-xs font-medium flex items-center gap-1"
-                >
-                  <Sprout className="w-3.5 h-3.5 text-emerald-600" />
-                  {getTranslation('CropCare', language)}
-                </Button>
-              </Link>
-              <Link to="/equipment">
-                <Button 
-                  variant={location.pathname === "/equipment" ? "secondary" : "ghost"} 
-                  size="sm" 
-                  className="text-xs font-medium flex items-center gap-1"
-                >
-                  <Tractor className="w-3.5 h-3.5 text-blue-600" />
-                  Machinery
-                </Button>
-              </Link>
+              ))}
             </nav>
 
             {/* Right Actions */}
@@ -143,8 +163,9 @@ export const Header = ({ searchQuery, setSearchQuery, language }: HeaderProps) =
                 size="icon"
                 onClick={() => setIsAlertsOpen(true)}
                 className="relative h-9 w-9 text-muted-foreground hover:text-foreground"
-                aria-label="View active mandi price alerts"
+                aria-label="View active Udupi mandi price alerts"
                 title="Price alerts"
+                id="btn-price-alerts"
               >
                 <Bell className="w-4 h-4" />
                 <Badge className="absolute top-1 right-1 w-4 h-4 p-0 text-[10px] flex items-center justify-center bg-amber-500 text-white font-bold">
@@ -159,18 +180,21 @@ export const Header = ({ searchQuery, setSearchQuery, language }: HeaderProps) =
                   className="h-9 w-9 text-muted-foreground hover:text-foreground"
                   aria-label="Farmer profile and watchlist settings"
                   title="Farmer profile"
+                  id="btn-farmer-profile"
                 >
                   <User className="w-4 h-4" />
                 </Button>
               </Link>
 
-              {/* Mobile Menu Button */}
+              {/* Mobile Menu Toggle */}
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="lg:hidden h-9 w-9 text-muted-foreground"
-                aria-label="Toggle mobile menu"
+                aria-label="Toggle mobile navigation menu"
+                aria-expanded={isMobileMenuOpen}
+                id="btn-mobile-menu"
               >
                 {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </Button>
@@ -179,61 +203,57 @@ export const Header = ({ searchQuery, setSearchQuery, language }: HeaderProps) =
 
           {/* Mobile Menu Dropdown */}
           {isMobileMenuOpen && (
-            <div className="lg:hidden py-3 border-t space-y-2">
+            <div className="lg:hidden py-3 border-t space-y-2" role="navigation" aria-label="Mobile Navigation">
               <div className="relative mb-3">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
-                  placeholder={getTranslation('searchPlaceholder', language)}
+                  placeholder={getTranslation("searchPlaceholder", language)}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9 h-9 bg-muted/60 text-xs"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <Link to="/" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button variant="outline" size="sm" className="w-full justify-start text-xs font-medium">
-                    🌾 Mandi Intelligence
+              <div className="grid grid-cols-1 gap-2">
+                {navLinks.map((link) => (
+                  <Button
+                    key={link.id}
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-start text-xs font-medium gap-2"
+                    onClick={() => {
+                      handleNavClick(link.tab);
+                      setIsMobileMenuOpen(false);
+                    }}
+                  >
+                    {link.icon}
+                    {link.label}
                   </Button>
-                </Link>
-                <Link to="/weather" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button variant="outline" size="sm" className="w-full justify-start text-xs font-medium">
-                    ☀️ {getTranslation('weather', language)}
-                  </Button>
-                </Link>
-                <Link to="/crop-care" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button variant="outline" size="sm" className="w-full justify-start text-xs font-medium">
-                    🌱 {getTranslation('CropCare', language)}
-                  </Button>
-                </Link>
-                <Link to="/equipment" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button variant="outline" size="sm" className="w-full justify-start text-xs font-medium">
-                    🚜 Machinery
-                  </Button>
-                </Link>
+                ))}
               </div>
             </div>
           )}
         </div>
       </header>
 
-      {/* Price Alerts Modal Dialog */}
+      {/* Price Alerts Modal */}
       <Dialog open={isAlertsOpen} onOpenChange={setIsAlertsOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-lg font-bold">
               <Bell className="w-5 h-5 text-amber-500" />
-              Live Mandi Price & Arrival Alerts
+              Live Udupi Mandi Price Alerts
             </DialogTitle>
             <DialogDescription className="text-xs">
-              Automated triggers based on AGMARKNET arrivals, APMC price surges, and buyer requisitions.
+              Automated triggers based on AGMARKNET arrivals, APMC price surges, and Bantakal cluster buyer requisitions.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-3 py-2">
             {activeAlerts.map((alert) => (
-              <div 
+              <div
                 key={alert.id}
                 className="p-3 bg-muted/50 rounded-lg border border-border space-y-1"
+                role="listitem"
               >
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-xs text-foreground flex items-center gap-1">
@@ -244,9 +264,7 @@ export const Header = ({ searchQuery, setSearchQuery, language }: HeaderProps) =
                     {alert.time}
                   </Badge>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  {alert.description}
-                </p>
+                <p className="text-xs text-muted-foreground">{alert.description}</p>
               </div>
             ))}
           </div>
@@ -260,6 +278,7 @@ export const Header = ({ searchQuery, setSearchQuery, language }: HeaderProps) =
                 toast.success("Price alert preferences saved to SMS/WhatsApp!");
               }}
               className="text-xs"
+              id="btn-configure-sms-alerts"
             >
               Configure SMS Alerts
             </Button>
@@ -267,6 +286,7 @@ export const Header = ({ searchQuery, setSearchQuery, language }: HeaderProps) =
               size="sm"
               onClick={() => setIsAlertsOpen(false)}
               className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs"
+              id="btn-dismiss-alerts"
             >
               Dismiss
             </Button>

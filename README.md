@@ -13,7 +13,7 @@
 
 ## 📖 Overview
 
-**Krishi Rates** is an enterprise-grade, data-driven agricultural intelligence and market discovery platform built for Indian farmers, Farmer Producer Organizations (FPOs), and rural agri-entrepreneurs. 
+**Vajra Yield** is an enterprise-grade, data-driven agricultural intelligence and market discovery platform built for Indian farmers, Farmer Producer Organizations (FPOs), and rural agri-entrepreneurs. 
 
 Developed strictly aligned with **Problem Statement 02 (Rural Market Intelligence & Price Discovery)**, the platform eliminates middleman opacity, enables spatial APMC mandi arbitrage, and empowers farmers with true net in-hand cash realization calculation, 14-day price forecasting, WDRA warehouse discovery, and multi-language voice accessibility.
 
@@ -117,7 +117,7 @@ Developed strictly aligned with **Problem Statement 02 (Rural Market Intelligenc
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/tarun215/HPL.git
+git clone https://github.com/vineethbhatalevoor/VajraYield.git
 cd HPL
 
 # 2. Install dependencies
@@ -151,7 +151,7 @@ npm run build
 ## ♿ Accessibility & Inclusivity
 
 - **High Contrast Ratios:** Designed for outdoor sunlight readability in rural environments.
-- **Audio Readouts:** Native text-to-speech engine reading commodity modal rates in English, Hindi, and Marathi.
+- **Audio Readouts:** Native text-to-speech engine reading commodity modal rates in English, Hindi, and Kannada.
 - **Low-Bandwidth Optimized:** Lightweight bundle footprint with responsive SVG charts and instant offline caching.
 - **Full Keyboard & Screen Reader Support:** Semantic HTML markup and Radix UI ARIA-compliant primitives.
 
