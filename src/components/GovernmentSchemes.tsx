@@ -11,7 +11,7 @@ interface GovernmentSchemesProps {
   language?: Language;
 }
 
-// Mock data for demonstration  deadline
+// Mock data for demonstration
 const schemes = [
   {
     name: "PM-KISAN",
@@ -60,39 +60,28 @@ const schemes = [
   {
     name: "National Agriculture Market (e-NAM)",
     description: "Online trading platform for agricultural commodities",
-    eligibility: "Farmers selling in APMC markets",
-    amount: "Free registration",
+    eligibility: "All farmers, traders, and buyers",
+    amount: "Market access",
     status: "Active",
     deadline: "Ongoing",
     type: "Market Access",
-    applyUrl: "https://enam.gov.in/",
-    infoUrl: "https://enam.gov.in/"
+    applyUrl: "https://www.enam.gov.in/web/",
+    infoUrl: "https://www.enam.gov.in/web/"
   },
   {
     name: "Paramparagat Krishi Vikas Yojana",
     description: "Promotion of organic farming practices",
-    eligibility: "Farmers willing to adopt organic farming",
-    amount: "₹50,000/hectare for 3 years",
-    status: "Active", 
-    deadline: "2025-06-30",
-    type: "Organic Farming",
-    applyUrl: "https://pkvy.nic.in/",
-    infoUrl: "https://pkvy.nic.in/"
-  },
-  {
-    name: "PM-KMY (Pradhan Mantri Kisan Maandhan Yojana)",
-    description: "Pension scheme for small and marginal farmers (₹3,000/month at 60)",
-    eligibility: "Small and marginal farmers aged 18-40 years",
-    amount: "Pension ₹3,000/month from age 60",
+    eligibility: "Farmers willing to adopt organic farming in clusters",
+    amount: "₹50,000/ha for 3 years",
     status: "Active",
     deadline: "Ongoing",
-    type: "Pension",
-    applyUrl: "https://maandhan.in/pmkmy",
-    infoUrl: "https://maandhan.in/pmkmy"
+    type: "Financial Support",
+    applyUrl: "https://pgsindia-ncof.gov.in/",
+    infoUrl: "https://pgsindia-ncof.gov.in/"
   },
   {
-    name: "PMKSY (Pradhan Mantri Krishi Sinchayee Yojana)",
-    description: "Irrigation and water-use efficiency for agriculture",
+    name: "PM Krishi Sinchayee Yojana (PMKSY)",
+    description: "Expanding cultivable area under assured irrigation",
     eligibility: "Farmers and water user associations as per guidelines",
     amount: "Subsidy/assistance as per component",
     status: "Active",
@@ -115,12 +104,12 @@ const schemes = [
 ];
 
 const schemeNameMap: Record<string, Partial<Record<Language, string>>> = {
-  "PM-KISAN": { hi: "पीएम-किसान", mr: "पीएम-किसान", gu: "પીએમ-કિસાન", te: "పీఎం-కిసాన్" },
-  "Pradhan Mantri Fasal Bima Yojana": { hi: "प्रधान मंत्री फसल बीमा योजना", mr: "प्रधानमंत्री पीक विमा योजना", gu: "પ્રધાનમંત્રી પાક વીમા યોજના", te: "ప్రధాన్ మంత్రి పంట బీమా యోజన" },
-  "Kisan Credit Card": { hi: "किसान क्रेडिट कार्ड", mr: "किसान क्रेडिट कार्ड", gu: "કિસાન ક્રેડિટ કાર્ડ", te: "కిసాన్ క్రెడిట్ కార్డ్" },
-  "Soil Health Card": { hi: "मृदा स्वास्थ्य कार्ड", mr: "मृदा आरोग्य कार्ड", gu: "માટી આરોગ્ય કાર્ડ", te: "మట్టి ఆరోగ్య కార్డు" },
-  "National Agriculture Market (e-NAM)": { hi: "राष्ट्रीय कृषि बाजार (e-NAM)", mr: "राष्ट्रीय कृषि बाजार (e-NAM)", gu: "રાષ્ટ્રીય કૃષિ બજાર (e-NAM)", te: "జాతీయ వ్యవసాయ మార్కెట్ (e-NAM)" },
-  "Paramparagat Krishi Vikas Yojana": { hi: "परम्परागत कृषि विकास योजना", mr: "परंपरागत कृषि विकास योजना", gu: "પરંપરાગત કૃષિ વિકાસ યોજના", te: "పరంపరాగత కృషి వికాస్ యోజన" },
+  "PM-KISAN": { hi: "पीएम-किसान", mr: "पीएम-किसान", gu: "પીએમ-કિસાન", te: "పీఎం-కిసాన్", kn: "ಪಿಎಂ-ಕಿಸಾನ್", tulu: "ಪಿಎಂ-ಕಿಸಾನ್" },
+  "Pradhan Mantri Fasal Bima Yojana": { hi: "प्रधान मंत्री फसल बीमा योजना", mr: "प्रधानमंत्री पीक विमा योजना", gu: "પ્રધાનમંત્રી પાક વીમા યોજના", te: "ప్రధాన్ మంత్రి పంట బీమా యోజన", kn: "ಪ್ರಧಾನ ಮಂತ್ರಿ ಫಸಲ್ ಬಿಮಾ ಯೋಜನೆ", tulu: "ಪ್ರಧಾನ ಮಂತ್ರಿ ಫಸಲ್ ಬಿಮಾ ಯೋಜನೆ" },
+  "Kisan Credit Card": { hi: "किसान क्रेडिट कार्ड", mr: "किसान क्रेडिट कार्ड", gu: "કિસાન ક્રેડિટ કાર્ડ", te: "కిసాన్ క్రెడిట్ కార్డ్", kn: "ಕಿಸಾನ್ ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್", tulu: "ಕಿಸಾನ್ ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್" },
+  "Soil Health Card": { hi: "मृदा स्वास्थ्य कार्ड", mr: "मृदा आरोग्य कार्ड", gu: "માટી આરોગ્ય કાર્ડ", te: "మట్టి ఆరోగ్య కార్డు", kn: "ಮಣ್ಣು ಆರೋಗ್ಯ ಕಾರ್ಡ್", tulu: "ಮಣ್ಣುದ ಆರೋಗ್ಯ ಕಾರ್ಡ್" },
+  "National Agriculture Market (e-NAM)": { hi: "राष्ट्रीय कृषि बाजार (e-NAM)", mr: "राष्ट्रीय कृषि बाजार (e-NAM)", gu: "રાષ્ટ્રીય કૃષિ બજાર (e-NAM)", te: "జాతీయ వ్యవసాయ మార్కెట్ (e-NAM)", kn: "ರಾಷ್ಟ್ರೀಯ ಕೃಷಿ ಮಾರುಕಟ್ಟೆ (e-NAM)", tulu: "ರಾಷ್ಟ್ರೀಯ ಕೃಷಿ ಮಾರುಕಟ್ಟೆ (e-NAM)" },
+  "Paramparagat Krishi Vikas Yojana": { hi: "परम्परागत कृषि विकास योजना", mr: "परंपरागत कृषि विकास योजना", gu: "પરંપરાગત કૃષિ વિકાસ યોજના", te: "పరంపరాగత కృషి వికాస్ యోజన", kn: "ಸಾಂಪ್ರದಾಯಿಕ ಕೃಷಿ ವಿಕಾಸ ಯೋಜನೆ", tulu: "ಸಾಂಪ್ರದಾಯಿಕ ಕೃಷಿ ವಿಕಾಸ ಯೋಜನೆ" },
 };
 
 const schemeDescMap: Record<string, Partial<Record<Language, string>>> = {
@@ -128,37 +117,49 @@ const schemeDescMap: Record<string, Partial<Record<Language, string>>> = {
     hi: "किसान परिवारों को ₹6,000/वर्ष की आय सहायता",
     mr: "शेतकरी कुटुंबांना ₹6,000/वर्ष उत्पन्न सहाय्य",
     gu: "ખેડૂત પરિવારોને ₹6,000/વર્ષની આવક સહાય",
-    te: "రైతు కుటుంబాలకు సంవత్సరానికి ₹6,000 ఆదాయ సహాయం"
+    te: "రైతు కుటుంబాలకు సంవత్సరానికి ₹6,000 ఆదాయ సహాయం",
+    kn: "ರೈತ ಕುಟುಂಬಗಳಿಗೆ ವಾರ್ಷಿಕ ₹6,000 ಆದಾಯ ನೆರವು",
+    tulu: "ರೈತರೆ ಕುಟುಂಬೊಲೆಗ್ ವರ್ಷೊಗು ₹6,000 ಆದಾಯ ಸಹಾಯ"
   },
   "Crop insurance scheme providing financial support to farmers": {
     hi: "किसानों को वित्तीय सहायता प्रदान करने वाली फसल बीमा योजना",
     mr: "शेतकऱ्यांना आर्थिक मदत देणारी पीक विमा योजना",
     gu: "ખેડૂતોને આર્થિક સહાય આપતી પાક વીમા યોજના",
-    te: "రైతులకు ఆర్థిక సహాయం అందించే పంట బీమా పథకం"
+    te: "రైతులకు ఆర్థిక సహాయం అందించే పంట బీమా పథకం",
+    kn: "ರೈತರಿಗೆ ಆರ್ಥಿಕ ನೆರವು ನೀಡುವ ಬೆಳೆ ವಿಮೆ ಯೋಜನೆ",
+    tulu: "ರೈತೆರೆಗ್ ಆರ್ಥಿಕ ಸಹಾಯ ಕೊರ್ಪುನ ಬೆಳೆ ವಿಮೆ ಯೋಜನೆ"
   },
   "Credit facility for agriculture and allied activities": {
     hi: "कृषि और संबद्ध गतिविधियों के लिए ऋण सुविधा",
     mr: "कृषी व संलग्न उपक्रमांसाठी कर्ज सुविधा",
     gu: "કૃષિ અને સંબંધિત પ્રવૃત્તિઓ માટે લોન સુવિધા",
-    te: "వ్యవసాయం మరియు అనుబంధ కార్యకలాపాలకు రుణ సౌకర్యం"
+    te: "వ్యవసాయం మరియు అనుబంధ కార్యకలాపాలకు రుణ సౌకర్యం",
+    kn: "ಕೃಷಿ ಮತ್ತು ಸಂಬಂಧಿತ ಚಟುವಟಿಕೆಗಳಿಗೆ ಸಾಲ ಸೌಲಭ್ಯ",
+    tulu: "ಕೃಷಿ ಬೊಕ್ಕ ಸಂಬಂಧ ಪಟ್ಟಿನ ಕೆಲಸೊಲೆಗ್ ಸಾಲ ಸೌಲಭ್ಯ"
   },
   "Free soil testing and recommendations for crop productivity": {
     hi: "फसल उत्पादकता के लिए मुफ्त मिट्टी परीक्षण और सिफारिशें",
     mr: "पीक उत्पादकतेसाठी विनामूल्य मृदा परीक्षण आणि शिफारसी",
     gu: "પાક ઉત્પાદકતા માટે મફત માટી પરીક્ષણ અને ભલામણો",
-    te: "పంట ఉత్పాదకత కోసం ఉచిత మట్టి పరీక్షలు మరియు సిఫారసులు"
+    te: "పంట ఉత్పాదకత కోసం ఉచిత మట్టి పరీక్షలు మరియు సిఫారసులు",
+    kn: "ಬೆಳೆ ಇಳುವರಿ ಹೆಚ್ಚಿಸಲು ಉಚಿತ ಮಣ್ಣು ಪರೀಕ್ಷೆ ಮತ್ತು ಸಲಹೆಗಳು",
+    tulu: "ಬೆಳೆ ಜಾಸ್ತಿ ಮಲ್ಪೆರೆ ಉಚಿತ ಮಣ್ಣುದ ಪರೀಕ್ಷೆ ಬೊಕ್ಕ ಸಲಹೆಲು"
   },
   "Online trading platform for agricultural commodities": {
     hi: "कृषि वस्तुओं के लिए ऑनलाइन ट्रेडिंग प्लेटफॉर्म",
     mr: "कृषी वस्तूंसाठी ऑनलाइन ट्रेडिंग प्लॅटफॉर्म",
     gu: "કૃષિ પદાર્થો માટે ઑનલાઇન ટ્રેડિંગ પ્લેટફોર્મ",
-    te: "వ్యవసాయ సరుకుల కోసం ఆన్‌లైన్ ట్రేడింగ్ ప్లాట్‌ఫారమ్"
+    te: "వ్యవసాయ సరుకుల కోసం ఆన్‌లైన్ ట్రేడింగ్ ప్లాట్‌ಫಾರమ్",
+    kn: "ಕೃಷಿ ಉತ್ಪನ್ನಗಳಿಗಾಗಿ ಆನ್‌ಲೈನ್ ವ್ಯಾಪಾರ ವೇದಿಕೆ",
+    tulu: "ಕೃಷಿ ವಸ್ತುಲೆಗ್ ಆನ್‌ಲೈನ್ ವ್ಯಾಪಾರ ವೇದಿಕೆ"
   },
   "Promotion of organic farming practices": {
     hi: "जैविक खेती के प्रोत्साहन",
     mr: "सेंद्रिय शेतीच्या प्रोत्साहनासाठी",
     gu: "સેંદ્રીય ખેતીને પ્રોત્સાહન",
-    te: "సేంద్రీయ వ్యవసాయానికి ప్రోత్సాహం"
+    te: "సేంద్రీయ వ్యవసాయానికి ప్రోత్సాహం",
+    kn: "ಸಾವಯವ ಕೃಷಿ ಪದ್ಧತಿಗಳಿಗೆ ಉತ್ತೇಜನ",
+    tulu: "ಸಾವಯವ ಕೃಷಿ ಕ್ರಮಲೆಗ್ ಪ್ರೋತ್ಸಾಹ"
   }
 };
 
@@ -269,7 +270,7 @@ export const GovernmentSchemes = ({ searchQuery, language = 'en' }: GovernmentSc
               <div className="flex gap-2 mt-3">
                 {"applyUrl" in scheme ? (
                   <Button asChild size="sm" variant="default" className="flex items-center gap-1 text-xs bg-emerald-700 hover:bg-emerald-800 text-white">
-                    <a href={(scheme as any).applyUrl} target="_blank" rel="noopener noreferrer">
+                    <a href={(scheme as { applyUrl: string }).applyUrl} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="w-3.5 h-3.5" />
                       Apply Online
                     </a>
@@ -283,7 +284,7 @@ export const GovernmentSchemes = ({ searchQuery, language = 'en' }: GovernmentSc
 
                 {"infoUrl" in scheme ? (
                   <Button asChild size="sm" variant="outline" className="text-xs">
-                    <a href={(scheme as any).infoUrl} target="_blank" rel="noopener noreferrer">
+                    <a href={(scheme as { infoUrl: string }).infoUrl} target="_blank" rel="noopener noreferrer">
                       Official Portal
                     </a>
                   </Button>

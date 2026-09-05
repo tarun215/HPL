@@ -206,7 +206,7 @@ export const DemandForecasting = ({ language = "en" }: DemandForecastingProps) =
                   tickFormatter={(val) => `₹${val}`}
                 />
                 <Tooltip
-                  formatter={(value: any) => [`₹${value}`, ""]}
+                  formatter={(value: number | string) => [`₹${value}`, ""]}
                   contentStyle={{ backgroundColor: "#0f172a", color: "#fff", borderRadius: "8px", fontSize: "12px" }}
                 />
                 <Legend wrapperStyle={{ fontSize: "12px", paddingTop: "10px" }} />

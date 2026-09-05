@@ -12,7 +12,9 @@ export const LanguageSwitcher = ({ language, setLanguage }: LanguageSwitcherProp
     try {
       localStorage.setItem("app_language", value);
       window.dispatchEvent(new CustomEvent("app_language_change", { detail: value }));
-    } catch { }
+    } catch (e) {
+      console.warn("Could not save language preference:", e);
+    }
     setLanguage(value);
   };
 

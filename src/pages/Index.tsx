@@ -138,9 +138,6 @@ const Index = () => {
           <MarketIntelligenceDashboard
             language={language}
             searchQuery={searchQuery}
-            selectedState={selectedState}
-            selectedDistrict={selectedDistrict}
-            selectedMarket={selectedMarket}
           />
         </section>
 

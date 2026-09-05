@@ -19,17 +19,11 @@ import { RURAL_COMMODITIES } from "@/data/ruralMarketData";
 interface MarketIntelligenceDashboardProps {
   language: Language;
   searchQuery?: string;
-  selectedState?: string;
-  selectedDistrict?: string;
-  selectedMarket?: string;
 }
 
 export const MarketIntelligenceDashboard = ({
   language = "en",
   searchQuery = "",
-  selectedState = "",
-  selectedDistrict = "",
-  selectedMarket = "",
 }: MarketIntelligenceDashboardProps) => {
   const [activeTab, setActiveTab] = useState<string>("discovery");
   const [calculatorCropId, setCalculatorCropId] = useState<string>("tomato");
