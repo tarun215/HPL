@@ -7,9 +7,14 @@ import FarmingEquipment from "@/components/FarmingEquipment";
 const EquipmentPage = () => {
   const [language, setLanguage] = useState<Language>(() => (localStorage.getItem("app_language") as Language) || "en");
   useEffect(() => {
-    const handler = (e: any) => setLanguage(e.detail as Language);
-    window.addEventListener("app_language_change", handler as any);
-    return () => window.removeEventListener("app_language_change", handler as any);
+    const handler = (e: Event) => {
+      const customEvent = e as CustomEvent<Language>;
+      if (customEvent.detail) {
+        setLanguage(customEvent.detail);
+      }
+    };
+    window.addEventListener("app_language_change", handler);
+    return () => window.removeEventListener("app_language_change", handler);
   }, []);
   return (
     <div className="min-h-screen bg-background">

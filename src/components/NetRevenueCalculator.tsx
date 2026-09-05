@@ -18,6 +18,10 @@ import {
   Users,
   MapPin,
   Volume2,
+  VolumeX,
+  RotateCcw,
+  X,
+  Radio,
   Leaf,
   Download,
   Share2,
@@ -40,15 +44,31 @@ import { Language } from "@/utils/translations";
 import { getMarketTranslation } from "@/utils/marketTranslations";
 import { toast } from "sonner";
 
+import { playVernacularAudio, stopVernacularAudio } from "@/utils/audioSpeech";
+
 interface NetRevenueCalculatorProps {
   language: Language;
   initialCropId?: string;
   initialMandiId?: string;
 }
 
-// Kannada speech synthesis text for "Listen" button
-const KANNADA_AUDIO_BRIEFING =
-  "ಬಂಟಕಲ್ ರೈತರಿಗೆ ಉಡುಪಿ ಎಪಿಎಂಸಿ ಮಾರುಕಟ್ಟೆ ಹೆಚ್ಚು ಲಾಭದಾಯಕವಾಗಿದೆ. ಒಟ್ಟು ನಿವ್ವಳ ಆದಾಯ ಒಂಬತ್ತು ಸಾವಿರದ ಒಂಬೈನೂರ ಐವತ್ತೆರಡು ರೂಪಾಯಿಗಳು.";
+const KANNADA_CROP_NAMES: Record<string, string> = {
+  tomato: "ಟೊಮ್ಯಾಟೊ",
+  mattu_gulla: "ಮಟ್ಟು ಗುಳ್ಳ ಬದನೆಕಾಯಿ",
+  jasmine: "ಶಂಕರಪುರ ಮಲ್ಲಿಗೆ",
+  arecanut: "ಅಡಿಕೆ",
+  coconut: "ತೆಂಗಿನಕಾಯಿ",
+  black_pepper: "ಕಪ್ಪು ಮೆಣಸು",
+  paddy: "ಭತ್ತ",
+};
+
+const KANNADA_MANDI_NAMES: Record<string, string> = {
+  mandi_adi_udupi: "ಆದಿ ಉಡುಪಿ ಎಪಿಎಂಸಿ",
+  mandi_mangaluru: "ಮಂಗಳೂರು ಬಂದರ್",
+  mandi_santhekatte: "ಸಂತೆಕಟ್ಟೆ ಮಾರುಕಟ್ಟೆ",
+  mandi_karkala: "ಕಾರ್ಕಳ ಎಪಿಎಂಸಿ",
+  mandi_kundapura: "ಕುಂದಾಪುರ ಎಪಿಎಂಸಿ",
+};
 
 export const NetRevenueCalculator = ({
   language = "en",
@@ -61,11 +81,19 @@ export const NetRevenueCalculator = ({
   const [isPooled, setIsPooled] = useState<boolean>(false);
   const [applyPerishability, setApplyPerishability] = useState<boolean>(true);
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
+  const [showTranscript, setShowTranscript] = useState<boolean>(false);
 
   // Update crop when prop changes
   useEffect(() => {
     if (initialCropId) setCropId(initialCropId);
   }, [initialCropId]);
+
+  // Clean up audio on unmount
+  useEffect(() => {
+    return () => {
+      stopVernacularAudio();
+    };
+  }, []);
 
   const selectedCrop = useMemo(
     () => RURAL_COMMODITIES.find((c) => c.id === cropId) || RURAL_COMMODITIES[0],
@@ -79,7 +107,7 @@ export const NetRevenueCalculator = ({
         cropId,
         quantityKg,
         origin,
-        MASTER_MANDIS as any[],
+        MASTER_MANDIS,
         isPooled,
         applyPerishability
       );
@@ -101,6 +129,37 @@ export const NetRevenueCalculator = ({
     isReferenceScenario && isPooled && mangaluru && adiUdupi &&
     mangaluru.netCashPooled > adiUdupi.netCashPooled;
 
+  // Generate dynamic Kannada voice briefing text
+  const kannadaBriefingText = useMemo(() => {
+    if (!winner) return "ವಜ್ರ ಯೀಲ್ಡ್ ನಿವ್ವಳ ಆದಾಯ ಲೆಕ್ಕಾಚಾರ.";
+    const cropKn = KANNADA_CROP_NAMES[cropId] || selectedCrop.name;
+    const originKn = origin.split(" ")[0];
+    const winnerMandiKn = KANNADA_MANDI_NAMES[winner.id] || winner.name;
+    const netCash = isPooled ? winner.netCashPooled : winner.netCashSolo;
+
+    let text = `ನಮಸ್ಕಾರ. ${originKn} ಭಾಗದ ರೈತರಿಗೆ ${quantityKg} ಕೆಜಿ ${cropKn} ಮಾರಾಟ ಮಾಡಲು ${winnerMandiKn} ಮಾರುಕಟ್ಟೆ ಅತ್ಯಂತ ಲಾಭದಾಯಕವಾಗಿದೆ. `;
+    text += `ಎಲ್ಲಾ ಸಾಗಾಣಿಕೆ ಮತ್ತು ಶುಲ್ಕ ಕಳೆದು ನಿಮ್ಮ ಕೈಗೆ ಸಿಗುವ ಒಟ್ಟು ನಿವ್ವಳ ಆದಾಯ ${netCash.toLocaleString("en-IN")} ರೂಪಾಯಿಗಳು. `;
+
+    if (showMangaluruWarning && adiUdupi && mangaluru) {
+      const gap = adiUdupi.netCashSolo - mangaluru.netCashSolo;
+      text += `ಎಚ್ಚರಿಕೆ! ಮಂಗಳೂರು ಬಂದರ್‌ನಲ್ಲಿ ಬೆಲೆ ಹೆಚ್ಚಾಗಿ ಕಂಡರೂ, ಸಾಗಾಣಿಕೆ ವೆಚ್ಚ ಮತ್ತು ಹೆಜಮಾಡಿ ಟೋಲ್ ಕಾರಣದಿಂದ ಆದಿ ಉಡುಪಿ ಮಾರುಕಟ್ಟೆಯು ${gap.toLocaleString("en-IN")} ರೂಪಾಯಿ ಹೆಚ್ಚು ನಿವ್ವಳ ಲಾಭ ನೀಡುತ್ತದೆ. `;
+    } else if (showPoolingCelebration && mangaluru && adiUdupi) {
+      const extra = mangaluru.netCashPooled - adiUdupi.netCashPooled;
+      text += `ಶಿರ್ವ ರೈತರೊಂದಿಗೆ ವಾಹನ ಹಂಚಿಕೆ ಪೂಲಿಂಗ್ ಮಾಡುವುದರಿಂದ ಮಂಗಳೂರು ಬಂದರ್‌ನಲ್ಲಿ ${extra.toLocaleString("en-IN")} ರೂಪಾಯಿ ಅಧಿಕ ಲಾಭ ಸಿಗುತ್ತದೆ. `;
+    } else if (isPooled) {
+      text += `ಕ್ಲಸ್ಟರ್ ಪೂಲಿಂಗ್‌ನಿಂದ ಸಾಗಾಣಿಕೆ ವೆಚ್ಚ ಉಳಿತಾಯವಾಗಿದೆ. `;
+    }
+
+    return text;
+  }, [winner, cropId, selectedCrop, origin, quantityKg, isPooled, showMangaluruWarning, showPoolingCelebration, adiUdupi, mangaluru]);
+
+  // English summary of briefing
+  const englishBriefingSummary = useMemo(() => {
+    if (!winner) return "";
+    const netCash = isPooled ? winner.netCashPooled : winner.netCashSolo;
+    return `For ${quantityKg}kg ${selectedCrop.name} from ${origin.split(" ")[0]}, ${winner.name} delivers highest in-hand cash of ₹${netCash.toLocaleString("en-IN")} (${isPooled ? "Cluster Pooled" : "Solo"} mode).`;
+  }, [winner, quantityKg, selectedCrop, origin, isPooled]);
+
   // Chart data
   const chartData = calculations.map((c) => ({
     name: c.name.split(" ")[0],
@@ -109,25 +168,32 @@ export const NetRevenueCalculator = ({
     "Net Cash": isPooled ? c.netCashPooled : c.netCashSolo,
   }));
 
-  // Web Speech API — Kannada vernacular
+  // High quality vernacular audio speech handler
   const handleSpeak = () => {
-    if (!window.speechSynthesis) {
-      toast.error("Web Speech API not supported in this browser.");
-      return;
-    }
     if (isSpeaking) {
-      window.speechSynthesis.cancel();
+      stopVernacularAudio();
       setIsSpeaking(false);
       return;
     }
-    const utter = new SpeechSynthesisUtterance(KANNADA_AUDIO_BRIEFING);
-    utter.lang = "kn-IN";
-    utter.rate = 0.9;
-    utter.onend = () => setIsSpeaking(false);
-    utter.onerror = () => setIsSpeaking(false);
-    window.speechSynthesis.speak(utter);
-    setIsSpeaking(true);
-    toast.success("▶ Playing Kannada mandi briefing…");
+
+    setShowTranscript(true);
+    toast.success("▶ ಕನ್ನಡ ಧ್ವನಿ ಬ್ರೀಫಿಂಗ್ ಪ್ರಾರಂಭವಾಗಿದೆ (Playing Kannada Briefing)…");
+
+    playVernacularAudio({
+      text: kannadaBriefingText,
+      lang: "kn",
+      rate: 0.95,
+      onStart: () => {
+        setIsSpeaking(true);
+      },
+      onEnd: () => {
+        setIsSpeaking(false);
+      },
+      onError: () => {
+        setIsSpeaking(false);
+        toast.error("ಧ್ವನಿ ಪ್ಲೇಬ್ಯಾಕ್ ದೋಷ ಕಂಡುಬಂದಿದೆ.");
+      },
+    });
   };
 
   // CSV Export
@@ -194,15 +260,28 @@ export const NetRevenueCalculator = ({
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               <Button
-                variant="outline"
+                variant={isSpeaking ? "destructive" : "outline"}
                 size="sm"
                 onClick={handleSpeak}
-                className={`flex items-center gap-1.5 text-xs ${isSpeaking ? "border-emerald-500 text-emerald-700 bg-emerald-50 dark:bg-emerald-950" : ""}`}
+                className={`flex items-center gap-1.5 text-xs font-semibold transition-all ${
+                  isSpeaking
+                    ? "bg-rose-600 hover:bg-rose-700 text-white shadow-sm ring-2 ring-rose-400/50"
+                    : "border-emerald-400/80 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200 dark:border-emerald-700"
+                }`}
                 aria-label="Listen to live mandi rates in Kannada"
                 id="btn-listen-mandi-rates"
               >
-                <Volume2 className={`w-3.5 h-3.5 ${isSpeaking ? "animate-pulse text-emerald-600" : ""}`} />
-                {isSpeaking ? "Stop Audio" : "ಕನ್ನಡ ಆಡಿಯೊ ಬ್ರೀಫಿಂಗ್"}
+                {isSpeaking ? (
+                  <>
+                    <VolumeX className="w-3.5 h-3.5 animate-pulse text-white" />
+                    Stop Audio (ನಿಲ್ಲಿಸಿ)
+                  </>
+                ) : (
+                  <>
+                    <Volume2 className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
+                    ಕನ್ನಡ ಆಡಿಯೊ ಬ್ರೀಫಿಂಗ್
+                  </>
+                )}
               </Button>
               <Button
                 variant="outline"
@@ -227,6 +306,76 @@ export const NetRevenueCalculator = ({
           </div>
         </CardHeader>
       </Card>
+
+      {/* Audio Briefing Transcript & Player Card */}
+      {showTranscript && (
+        <div className="relative p-4 rounded-xl border border-emerald-500/40 bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-amber-500/10 dark:from-emerald-950/40 dark:to-background shadow-sm animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-3 flex-1">
+              <div className="w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
+                {isSpeaking ? (
+                  <Radio className="w-5 h-5 animate-pulse text-white" />
+                ) : (
+                  <Volume2 className="w-5 h-5 text-white" />
+                )}
+              </div>
+              <div className="space-y-1.5 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge className="bg-emerald-700 text-white text-[10px] font-medium px-2 py-0.5">
+                    {isSpeaking ? "▶ ಧ್ವನಿ ಪ್ರಸಾರವಾಗುತ್ತಿದೆ (Playing Voice Briefing)" : "✓ ಕನ್ನಡ ಧ್ವನಿ ಬ್ರೀಫಿಂಗ್ (Kannada Audio Briefing)"}
+                  </Badge>
+                  <Badge variant="outline" className="border-emerald-400 text-emerald-800 dark:text-emerald-300 text-[10px]">
+                    Google HD TTS
+                  </Badge>
+                </div>
+
+                {/* Kannada Spoken Transcript */}
+                <p className="text-sm font-medium text-foreground leading-relaxed">
+                  "{kannadaBriefingText}"
+                </p>
+
+                {/* English Translation */}
+                <p className="text-xs text-muted-foreground italic">
+                  EN: {englishBriefingSummary}
+                </p>
+              </div>
+            </div>
+
+            {/* Controls */}
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <Button
+                size="sm"
+                variant={isSpeaking ? "destructive" : "default"}
+                onClick={handleSpeak}
+                className={`h-7 px-2.5 text-xs font-semibold ${!isSpeaking ? "bg-emerald-700 hover:bg-emerald-800 text-white" : ""}`}
+              >
+                {isSpeaking ? (
+                  <>
+                    <VolumeX className="w-3 h-3 mr-1" /> ನಿಲ್ಲಿಸಿ
+                  </>
+                ) : (
+                  <>
+                    <RotateCcw className="w-3 h-3 mr-1" /> ಮತ್ತೆ ಆಲಿಸಿ
+                  </>
+                )}
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => {
+                  stopVernacularAudio();
+                  setIsSpeaking(false);
+                  setShowTranscript(false);
+                }}
+                className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                title="Dismiss audio card"
+              >
+                <X className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Reference Scenario Insight Panel */}
       {isReferenceScenario && (

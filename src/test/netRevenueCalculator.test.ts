@@ -23,7 +23,7 @@ describe("VajraYield 500 kg Tomato Reference Scenario", () => {
       "tomato",
       500,
       "Bantakal",
-      MASTER_MANDIS as any[],
+      MASTER_MANDIS,
       false,  // Solo mode
       true    // Apply coastal perishability
     );
@@ -37,13 +37,13 @@ describe("VajraYield 500 kg Tomato Reference Scenario", () => {
   });
 
   it("should mark Adi Udupi as the isWinningSolo mandi for 500 kg Tomato", () => {
-    const results = calculateNetReturns("tomato", 500, "Bantakal", MASTER_MANDIS as any[], false, true);
+    const results = calculateNetReturns("tomato", 500, "Bantakal", MASTER_MANDIS, false, true);
     const adiUdupi = results.find((r) => r.id === "mandi_adi_udupi");
     expect(adiUdupi?.isWinningSolo).toBe(true);
   });
 
   it("should compute Adi Udupi net cash > ₹9,000 for 500 kg Tomato", () => {
-    const results = calculateNetReturns("tomato", 500, "Bantakal", MASTER_MANDIS as any[], false, true);
+    const results = calculateNetReturns("tomato", 500, "Bantakal", MASTER_MANDIS, false, true);
     const adiUdupi = results.find((r) => r.id === "mandi_adi_udupi");
     expect(adiUdupi!.netCashSolo).toBeGreaterThan(9000);
   });
@@ -54,7 +54,7 @@ describe("VajraYield 500 kg Tomato Reference Scenario", () => {
 // ─────────────────────────────────────────────────────────────
 describe("Cluster Freight Pooling (Bantakal–Shirva Network)", () => {
   it("should reduce Mangaluru pooled transit by ≥60% compared to solo transit", () => {
-    const results = calculateNetReturns("tomato", 500, "Bantakal", MASTER_MANDIS as any[], true, true);
+    const results = calculateNetReturns("tomato", 500, "Bantakal", MASTER_MANDIS, true, true);
     const mangaluru = results.find((r) => r.id === "mandi_mangaluru");
 
     expect(mangaluru).toBeDefined();
@@ -67,8 +67,8 @@ describe("Cluster Freight Pooling (Bantakal–Shirva Network)", () => {
   });
 
   it("should yield higher net cash pooled than solo for Mangaluru (long distance benefits pooling)", () => {
-    const soloResults = calculateNetReturns("tomato", 500, "Bantakal", MASTER_MANDIS as any[], false, true);
-    const pooledResults = calculateNetReturns("tomato", 500, "Bantakal", MASTER_MANDIS as any[], true, true);
+    const soloResults = calculateNetReturns("tomato", 500, "Bantakal", MASTER_MANDIS, false, true);
+    const pooledResults = calculateNetReturns("tomato", 500, "Bantakal", MASTER_MANDIS, true, true);
 
     const mangaluruSolo = soloResults.find((r) => r.id === "mandi_mangaluru");
     const mangaluruPooled = pooledResults.find((r) => r.id === "mandi_mangaluru");
@@ -77,7 +77,7 @@ describe("Cluster Freight Pooling (Bantakal–Shirva Network)", () => {
   });
 
   it("should have pooledTransitCost = soloTransitCost / 2.8 (rounded)", () => {
-    const results = calculateNetReturns("arecanut", 1000, "Bantakal", MASTER_MANDIS as any[], true, false);
+    const results = calculateNetReturns("arecanut", 1000, "Bantakal", MASTER_MANDIS, true, false);
     for (const r of results) {
       const expected = Math.round(r.soloTransitCost / 2.8);
       expect(r.pooledTransitCost).toBe(expected);
@@ -107,7 +107,7 @@ describe("Boundary: Invalid Quantity Inputs", () => {
 
   it("calculateNetReturns should throw for quantity 0 kg (propagates RangeError)", () => {
     expect(() =>
-      calculateNetReturns("tomato", 0, "Bantakal", MASTER_MANDIS as any[], false, true)
+      calculateNetReturns("tomato", 0, "Bantakal", MASTER_MANDIS, false, true)
     ).toThrow(RangeError);
   });
 });
@@ -134,7 +134,7 @@ describe("Data Layer: MASTER_MANDIS Integrity", () => {
   });
 
   it("should have Hejamadi toll (₹120) on Mangaluru route", () => {
-    const m = MASTER_MANDIS.find((m) => m.id === "mandi_mangaluru") as any;
+    const m = MASTER_MANDIS.find((m) => m.id === "mandi_mangaluru");
     expect(m?.tolls).toBe(120);
   });
 
@@ -153,7 +153,7 @@ describe("Data Layer: MASTER_MANDIS Integrity", () => {
 // ─────────────────────────────────────────────────────────────
 describe("Arecanut: Non-perishable Zero Spoilage", () => {
   it("should have zero spoilage loss for arecanut even with perishability enabled", () => {
-    const results = calculateNetReturns("arecanut", 1000, "Bantakal", MASTER_MANDIS as any[], false, true);
+    const results = calculateNetReturns("arecanut", 1000, "Bantakal", MASTER_MANDIS, false, true);
     for (const r of results) {
       expect(r.spoilageLoss).toBe(0);
     }
@@ -165,14 +165,14 @@ describe("Arecanut: Non-perishable Zero Spoilage", () => {
 // ─────────────────────────────────────────────────────────────
 describe("Gross Revenue Formula: rate × (kg/100) = gross", () => {
   it("should compute gross revenue correctly for 500 kg @ ₹2200/Qtl", () => {
-    const results = calculateNetReturns("tomato", 500, "Bantakal", MASTER_MANDIS as any[], false, false);
+    const results = calculateNetReturns("tomato", 500, "Bantakal", MASTER_MANDIS, false, false);
     const adiUdupi = results.find((r) => r.id === "mandi_adi_udupi");
     // 500 kg = 5 Qtl; rate = ₹2200 → gross = ₹11,000
     expect(adiUdupi?.grossRevenue).toBe(11000);
   });
 
   it("should compute gross revenue correctly for arecanut 200 kg @ ₹46500/Qtl", () => {
-    const results = calculateNetReturns("arecanut", 200, "Bantakal", MASTER_MANDIS as any[], false, false);
+    const results = calculateNetReturns("arecanut", 200, "Bantakal", MASTER_MANDIS, false, false);
     const adiUdupi = results.find((r) => r.id === "mandi_adi_udupi");
     // 200 kg = 2 Qtl; rate = ₹46500 → gross = ₹93,000
     expect(adiUdupi?.grossRevenue).toBe(93000);

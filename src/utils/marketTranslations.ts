@@ -553,7 +553,8 @@ export const marketTranslations = {
 export type MarketTranslationKey = keyof typeof marketTranslations.en;
 
 export const getMarketTranslation = (key: MarketTranslationKey, language: Language = 'en'): string => {
-  const langObj = (marketTranslations as any)[language] || marketTranslations.en;
+  const dictionary = marketTranslations as Record<string, Partial<Record<MarketTranslationKey, string>>>;
+  const langObj = dictionary[language] || marketTranslations.en;
   return langObj[key] || marketTranslations.en[key] || String(key);
 };
 

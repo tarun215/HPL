@@ -39,14 +39,26 @@ interface PriceChartsProps {
 export const PriceCharts = ({ language = 'en' }: PriceChartsProps) => {
   const [activeChart, setActiveChart] = useState<"commodities" | "fertilizer" | "pesticide">("commodities");
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  interface TooltipPayloadItem {
+    name?: string;
+    value?: number;
+    color?: string;
+  }
+
+  interface CustomTooltipProps {
+    active?: boolean;
+    payload?: TooltipPayloadItem[];
+    label?: string;
+  }
+
+  const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-card border border-border rounded-lg p-3 shadow-lg text-xs">
           <p className="font-bold text-foreground mb-1">{label}</p>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry: TooltipPayloadItem, index: number) => (
             <p key={index} style={{ color: entry.color }} className="font-medium">
-              {entry.name}: ₹{entry.value.toLocaleString("en-IN")}
+              {entry.name}: ₹{entry.value?.toLocaleString("en-IN")}
             </p>
           ))}
         </div>

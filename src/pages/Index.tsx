@@ -28,9 +28,14 @@ const Index = () => {
 
   // Listen for global language change events
   useEffect(() => {
-    const handler = (e: any) => setLanguage(e.detail as Language);
-    window.addEventListener("app_language_change", handler as any);
-    return () => window.removeEventListener("app_language_change", handler as any);
+    const handler = (e: Event) => {
+      const customEvent = e as CustomEvent<Language>;
+      if (customEvent.detail) {
+        setLanguage(customEvent.detail);
+      }
+    };
+    window.addEventListener("app_language_change", handler);
+    return () => window.removeEventListener("app_language_change", handler);
   }, []);
 
   // Simulate data refresh

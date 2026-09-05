@@ -2,6 +2,25 @@
 // HPL 2026 | PS 02 | Build For Udupi! (SMVITM Bantakal)
 // Pure functions only — no side effects, fully testable.
 
+export interface MandiCalculationInput {
+  id: string;
+  name: string;
+  distanceKm: number;
+  rates?: Record<string, number>;
+  commodities?: Record<
+    string,
+    {
+      modalPrice: number;
+      minPrice?: number;
+      maxPrice?: number;
+      arrivalsTonnes?: number;
+    }
+  >;
+  decayRates?: Record<string, number>;
+  baseTransitHire?: number;
+  tolls?: number;
+}
+
 export interface MandiCalculation {
   id: string;
   name: string;
@@ -53,7 +72,7 @@ export function calculateNetReturns(
   cropName: string,
   quantityKg: number,
   origin: string,
-  mandis: any[],
+  mandis: readonly MandiCalculationInput[] | MandiCalculationInput[],
   isPooled: boolean,
   applyPerishability: boolean
 ): MandiCalculation[] {
@@ -124,7 +143,9 @@ export function calculateNetReturns(
  * Convenience: compute the 500 kg Tomato reference scenario
  * (the HPL 2026 proof-of-concept scenario from Bantakal → 4 mandis).
  */
-export function computeReferenceScenario(mandis: any[]): {
+export function computeReferenceScenario(
+  mandis: readonly MandiCalculationInput[] | MandiCalculationInput[]
+): {
   adiUdupiNet: number;
   mangaluruNet: number;
   adiUdupiNetPooled: number;

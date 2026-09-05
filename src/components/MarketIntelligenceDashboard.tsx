@@ -37,9 +37,10 @@ export const MarketIntelligenceDashboard = ({
 
   // Listen for navigation tab events from Header
   useEffect(() => {
-    const handleTabSwitch = (e: any) => {
-      if (e.detail) {
-        setActiveTab(e.detail);
+    const handleTabSwitch = (e: Event) => {
+      const customEvent = e as CustomEvent<string>;
+      if (customEvent.detail) {
+        setActiveTab(customEvent.detail);
       }
     };
     window.addEventListener("switch_dashboard_tab", handleTabSwitch);

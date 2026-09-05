@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,36 @@ import { LineChart, Line, ResponsiveContainer, Tooltip } from "recharts";
 import { RURAL_COMMODITIES, CommodityRecord } from "@/data/ruralMarketData";
 import { Language, translateItemName } from "@/utils/translations";
 import { getMarketTranslation } from "@/utils/marketTranslations";
+import { playVernacularAudio, stopVernacularAudio } from "@/utils/audioSpeech";
+
+const KANNADA_COMMODITY_NAMES: Record<string, string> = {
+  "Tomato (Hybrid Local)": "ಟೊಮ್ಯಾಟೊ",
+  "Mattu Gulla (GI Brinjal)": "ಮಟ್ಟು ಗುಳ್ಳ ಬದನೆಕಾಯಿ",
+  "Shankarapura Jasmine": "ಶಂಕರಪುರ ಮಲ್ಲಿಗೆ",
+  "Arecanut (Chali Supari)": "ಅಡಿಕೆ",
+  "Byadagi Chilli": "ಬ್ಯಾಡಗಿ ಮೆಣಸಿನಕಾಯಿ",
+  "Coconut (Copra Grade)": "ತೆಂಗಿನಕಾಯಿ",
+  "Black Pepper (Malabar)": "ಕಪ್ಪು ಮೆಣಸು",
+  "Paddy (Jyothi / RNR 15048)": "ಭತ್ತ",
+  "Turmeric (Salem/Erode)": "ಅರಿಶಿನ",
+  "Ginger (Fresh Rhizome)": "ಶುಂಠಿ",
+  "Cashew Raw Nuts": "ಗೋಡಂಬಿ",
+  "Cardamom (Small Green)": "ಏಲಕ್ಕಿ",
+  "Onion (Nashik Red)": "ಈರುಳ್ಳಿ",
+  "Potato (Jyoti Fresh)": "ಆಲೂಗಡ್ಡೆ",
+  "Maize (Hybrid Feed Grade)": "ಮೆಕ್ಕೆಜೋಳ",
+  "Soybean (Yellow FAQ)": "ಸೋಯಾಬೀನ್",
+  "Urad Dal (Black Matpe)": "ಉದ್ದಿನಬೇಳೆ",
+  "Moong Dal (Green FAQ)": "ಹೆಸರುಬೇಳೆ",
+  "Groundnut (Pods Raw)": "ಕಡಲೆಕಾಯಿ",
+  "Sunflower Seeds": "ಸೂರ್ಯಕಾಂತಿ ಬೀಜ",
+};
+
+function getKannadaActionText(action: string): string {
+  if (action === "SELL NOW") return "ಶಿಫಾರಸು: ತಕ್ಷಣ ಮಾರಾಟ ಮಾಡಿ";
+  if (action === "HOLD") return "ಶಿಫಾರಸು: ಬೆಲೆ ಏರಿಕೆಯಾಗುವವರೆಗೆ ಸ್ಟಾಕ್ ಇಟ್ಟುಕೊಳ್ಳಿ";
+  return "ಶಿಫಾರಸು: ಹೆಚ್ಚು ಲಾಭದ ಮಾರುಕಟ್ಟೆಗೆ ಸಾಗಿಸಿ";
+}
 
 interface CommodityPriceDiscoveryProps {
   language: Language;
@@ -40,95 +70,93 @@ export const CommodityPriceDiscovery = ({
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [activeSpeechIndex, setActiveSpeechIndex] = useState<number | null>(null);
 
+  // Stop audio on unmount
+  useEffect(() => {
+    return () => {
+      stopVernacularAudio();
+    };
+  }, []);
+
+  // Sync prop searchQuery
+  const activeSearch = searchQuery || localSearch;
+
   const categories = [
     { id: "all", label: getMarketTranslation("allCategories", language) },
+    { id: "Vegetables", label: getMarketTranslation("vegetables", language) },
+    { id: "Cash Crops", label: getMarketTranslation("cashCrops", language) },
+    { id: "Spices", label: getMarketTranslation("spices", language) },
     { id: "Cereals", label: getMarketTranslation("cereals", language) },
     { id: "Pulses", label: getMarketTranslation("pulses", language) },
     { id: "Oilseeds", label: getMarketTranslation("oilseeds", language) },
-    { id: "Cash Crops", label: getMarketTranslation("cashCrops", language) },
-    { id: "Vegetables", label: getMarketTranslation("vegetables", language) },
-    { id: "Spices", label: getMarketTranslation("spices", language) },
   ];
-
-  const effectiveSearch = (searchQuery || localSearch).trim().toLowerCase();
 
   const filteredCommodities = useMemo(() => {
     return RURAL_COMMODITIES.filter((item) => {
-      const matchesCategory = selectedCategory === "all" || item.category === selectedCategory;
-      const localizedName = translateItemName(item.name, language, "commodity").toLowerCase();
+      const matchesCategory =
+        selectedCategory === "all" || item.category === selectedCategory;
       const matchesSearch =
-        !effectiveSearch ||
-        item.name.toLowerCase().includes(effectiveSearch) ||
-        localizedName.includes(effectiveSearch) ||
-        item.variety.toLowerCase().includes(effectiveSearch);
+        activeSearch === "" ||
+        item.name.toLowerCase().includes(activeSearch.toLowerCase()) ||
+        item.variety.toLowerCase().includes(activeSearch.toLowerCase()) ||
+        item.category.toLowerCase().includes(activeSearch.toLowerCase());
       return matchesCategory && matchesSearch;
     });
-  }, [selectedCategory, effectiveSearch, language]);
+  }, [selectedCategory, activeSearch]);
 
-  // Web Speech API for voice readout (vital for rural farmers)
   const handleVoiceReadout = (commodity?: CommodityRecord, index?: number) => {
-    if (!("speechSynthesis" in window)) {
-      alert("Speech synthesis is not supported on this browser.");
-      return;
-    }
+    const targetIndex = index !== undefined ? index : -1;
 
-    if (isSpeaking) {
-      window.speechSynthesis.cancel();
+    // If clicking the currently active button while speaking, toggle off
+    if (isSpeaking && activeSpeechIndex === targetIndex) {
+      stopVernacularAudio();
       setIsSpeaking(false);
       setActiveSpeechIndex(null);
       return;
     }
 
-    const itemsToRead = commodity ? [commodity] : filteredCommodities.slice(0, 5);
-    if (itemsToRead.length === 0) return;
+    // Stop any existing voice immediately to guarantee single voice assistant
+    stopVernacularAudio();
 
     let textToSpeak = "";
-    if (language === "hi") {
-      textToSpeak = "नमस्कार किसान भाइयों, आज के लाइव मंडी भाव: " + itemsToRead.map(c => 
-        `${c.name}, मॉडल भाव ₹${c.modalPrice} प्रति क्विंटल, आवक ${c.arrivalVolume} टन।`
-      ).join(" ");
-    } else if (language === "mr") {
-      textToSpeak = "नमस्कार शेतकरी बांधवांनो, आजचे थेट बाजारभाव: " + itemsToRead.map(c => 
-        `${c.name}, सरासरी भाव ₹${c.modalPrice} प्रति क्विंटल, आवक ${c.arrivalVolume} टन.`
-      ).join(" ");
-    } else if (language === "kn") {
-      textToSpeak = "ನಮಸ್ಕಾರ ರೈತ ಬಾಂಧವರೇ, ಇಂದಿನ ಲೈವ್ ಮಂಡಿ ದರಗಳು: " + itemsToRead.map(c => 
-        `${c.name}, ಮಾಡೆಲ್ ದರ ಪ್ರತಿ ಕ್ವಿಂಟಾಲ್‌ಗೆ ₹${c.modalPrice}, ಆವಕ ${c.arrivalVolume} ಟನ್.`
-      ).join(" ");
-    } else if (language === "tulu") {
-      textToSpeak = "ನಮಸ್ಕಾರ ರೈತರೆ, ಇನಿತ ಲೈವ್ ಮಂಡಿ ದರ: " + itemsToRead.map(c => 
-        `${c.name}, ಮಾಡೆಲ್ ದರ ಪ್ರತಿ ಕ್ವಿಂಟಾಲ್‌ಗ್ ₹${c.modalPrice}, ಆವಕ ${c.arrivalVolume} ಟನ್.`
-      ).join(" ");
+
+    if (commodity) {
+      // Individual Commodity Card Single Kannada Voice Readout
+      const cropKn = KANNADA_COMMODITY_NAMES[commodity.name] || commodity.name;
+      const recommendationText = getKannadaActionText(commodity.recommendation.action);
+      textToSpeak = `${cropKn}. ಮಾಡೆಲ್ ದರ ಪ್ರತಿ ಕ್ವಿಂಟಾಲ್‌ಗೆ ${commodity.modalPrice.toLocaleString("en-IN")} ರೂಪಾಯಿಗಳು. ಕನಿಷ್ಠ ದರ ${commodity.minPrice.toLocaleString("en-IN")} ರೂಪಾಯಿ, ಗರಿಷ್ಠ ದರ ${commodity.maxPrice.toLocaleString("en-IN")} ರೂಪಾಯಿ. ಇಂದಿನ ಆವಕ ${commodity.arrivalVolume} ಟನ್. ${recommendationText}.`;
     } else {
-      textToSpeak = "Live APMC Mandi Rates: " + itemsToRead.map(c => 
-        `${c.name}, modal price ₹${c.modalPrice} per quintal, daily arrivals ${c.arrivalVolume} tonnes.`
-      ).join(" ");
+      // Top Live Mandi Rates Overview
+      const itemsToRead = filteredCommodities.slice(0, 4);
+      if (itemsToRead.length === 0) return;
+
+      textToSpeak =
+        "ನಮಸ್ಕಾರ ರೈತ ಬಾಂಧವರೇ, ಇಂದಿನ ಲೈವ್ ಮಂಡಿ ದರಗಳ ಮುಖ್ಯಾಂಶಗಳು: " +
+        itemsToRead
+          .map((c) => {
+            const cropKn = KANNADA_COMMODITY_NAMES[c.name] || c.name;
+            return `${cropKn}, ಮಾಡೆಲ್ ದರ ಪ್ರತಿ ಕ್ವಿಂಟಾಲ್‌ಗೆ ${c.modalPrice.toLocaleString("en-IN")} ರೂಪಾಯಿಗಳು, ಆವಕ ${c.arrivalVolume} ಟನ್.`;
+          })
+          .join(" ") +
+        " ವಜ್ರ ಯೀಲ್ಡ್ ನೇರ ಮಾರುಕಟ್ಟೆ ಮಾಹಿತಿ.";
     }
 
-    const utterance = new SpeechSynthesisUtterance(textToSpeak);
-    utterance.rate = 0.9;
-    
-    // Set voice language
-    if (language === "hi") utterance.lang = "hi-IN";
-    else if (language === "mr") utterance.lang = "mr-IN";
-    else utterance.lang = "en-IN";
-
-    utterance.onstart = () => {
-      setIsSpeaking(true);
-      if (index !== undefined) setActiveSpeechIndex(index);
-    };
-
-    utterance.onend = () => {
-      setIsSpeaking(false);
-      setActiveSpeechIndex(null);
-    };
-
-    utterance.onerror = () => {
-      setIsSpeaking(false);
-      setActiveSpeechIndex(null);
-    };
-
-    window.speechSynthesis.speak(utterance);
+    playVernacularAudio({
+      text: textToSpeak,
+      lang: "kn", // Single, authentic native Kannada voice assistant
+      rate: 0.95,
+      onStart: () => {
+        setIsSpeaking(true);
+        setActiveSpeechIndex(targetIndex);
+      },
+      onEnd: () => {
+        setIsSpeaking(false);
+        setActiveSpeechIndex(null);
+      },
+      onError: () => {
+        setIsSpeaking(false);
+        setActiveSpeechIndex(null);
+      },
+    });
   };
 
   return (
@@ -157,19 +185,24 @@ export const CommodityPriceDiscovery = ({
             {/* Voice Readout CTA */}
             <div className="flex items-center gap-2">
               <Button
-                variant={isSpeaking ? "destructive" : "default"}
+                variant={isSpeaking && activeSpeechIndex === -1 ? "destructive" : "default"}
                 onClick={() => handleVoiceReadout()}
-                className="flex items-center gap-2 shadow-sm font-medium bg-emerald-700 hover:bg-emerald-800 text-white"
+                className={`flex items-center gap-2 shadow-sm font-semibold transition-all ${
+                  isSpeaking && activeSpeechIndex === -1
+                    ? "bg-rose-600 hover:bg-rose-700 text-white shadow-sm ring-2 ring-rose-400/50"
+                    : "bg-emerald-700 hover:bg-emerald-800 text-white"
+                }`}
+                id="btn-listen-mandi-rates"
               >
-                {isSpeaking ? (
+                {isSpeaking && activeSpeechIndex === -1 ? (
                   <>
                     <VolumeX className="w-4 h-4 animate-pulse" />
-                    {getMarketTranslation("stopAudio", language)}
+                    Stop Audio (ನಿಲ್ಲಿಸಿ)
                   </>
                 ) : (
                   <>
                     <Volume2 className="w-4 h-4" />
-                    {getMarketTranslation("listenRates", language)}
+                    ಕನ್ನಡ ಮಂಡಿ ದರ ಆಲಿಸಿ
                   </>
                 )}
               </Button>
