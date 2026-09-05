@@ -9,9 +9,7 @@
 **Hackathon Premier League (HPL) 2026 | SMVITM Bantakal**  
 **Track:** PS 02 — Rural Market Intelligence & Spatial Arbitrage  
 **Territory Focus:** Coastal Karnataka (*"Build For Udupi!"*)  
-**Status:** Production Ready | 100% Passing Vitest Coverage (27/27 Tests)
 
----
 
 [![Vite](https://img.shields.io/badge/Vite-6.0-646CFF?style=flat&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![React](https://img.shields.io/badge/React-18.3-61DAFB?style=flat&logo=react&logoColor=black)](https://reactjs.org/)
